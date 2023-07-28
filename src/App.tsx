@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./App.css";
 import players from "./data/players.json";
 import league from "./data/league.json";
@@ -45,9 +44,11 @@ function App() {
                             >
                               {playerInfo.name}
                             </div>
-                            <div className="badge rounded-pill text-bg-primary">
-                              {player.points}
-                            </div>
+                            {"points" in player && (
+                              <div className="badge rounded-pill text-bg-primary">
+                                {player.points}
+                              </div>
+                            )}
                             {player.isCaptain && (
                               <div className="badge rounded-pill text-bg-success">
                                 x 2
