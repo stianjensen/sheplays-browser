@@ -113,12 +113,14 @@ function App() {
   console.log("league", league);
 
   return (
-    <div className="container">
-      <h1>Teams</h1>
-      <div className="list-group">
-        {teams.map((team) => (
-          <Team key={team.teamName} team={team} className="list-group-item" />
-        ))}
+    <div className="d-flex pt-3" style={{ width: "100vw" }}>
+      <div className="container mx-auto">
+        <h1>Teams</h1>
+        <div className="list-group">
+          {teams.map((team) => (
+            <Team key={team.teamName} team={team} className="list-group-item" />
+          ))}
+        </div>
       </div>
     </div>
   );
