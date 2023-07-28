@@ -1,35 +1,77 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import players from "./data/players.json";
+import league from "./data/league.json";
+
+const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
 
 function App() {
-  const [count, setCount] = useState(0)
+  console.log("players", players);
+  console.log("league", league);
 
   return (
-    <>
+    <div className="container">
+      <h1>Teams</h1>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        {teams.map((team) => (
+          <div key={team.teamName} className="mb-4">
+            <h3 className="d-flex">
+              <div>{team.teamName}</div>
+              <div className="badge rounded-pill text-bg-secondary ms-3">
+                {team.score.total}
+              </div>
+            </h3>
+            <div style={{ display: "flex", textAlign: "left", gap: 16 }}>
+              {Object.entries(team.results).map(([slug, round]) => (
+                <div key={slug} className="card">
+                  <strong className="card-header d-flex">
+                    <div className="flex-fill">{slug}</div>
+                    <div className="badge rounded-pill text-bg-secondary">
+                      {round.score}
+                    </div>
+                  </strong>
+                  <div className="card-body">
+                    {round.players.map((player) => {
+                      const playerInfo = players.find(
+                        (it) => it.playerId === player.playerId
+                      );
+                      if (playerInfo) {
+                        return (
+                          <div className="d-flex gap-3 py-1">
+                            <div
+                              className={`flex-fill ${
+                                player.played ? "" : "text-secondary"
+                              }`}
+                            >
+                              {playerInfo.name}
+                            </div>
+                            <div className="badge rounded-pill text-bg-primary">
+                              {player.points}
+                            </div>
+                            {player.isCaptain && (
+                              <div className="badge rounded-pill text-bg-success">
+                                x 2
+                              </div>
+                            )}
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div>
+                            <em>Player info missing</em>
+                          </div>
+                        );
+                      }
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
