@@ -3,6 +3,7 @@ import players from "./data/players.json";
 import league from "./data/league.json";
 import { Collapse } from "reactstrap";
 import { useState } from "react";
+import countries from "./data/countries";
 
 const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
 
@@ -37,22 +38,28 @@ const TeamRound = ({
             (it) => it.playerId === player.playerId
           );
           if (playerInfo) {
+            const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
+            const benched = countryPlayed && !player.played;
             return (
               <div className="d-flex gap-3 py-1">
                 <div
                   className={`flex-fill ${
-                    player.played ? "" : "text-secondary"
+                    player.played
+                      ? ""
+                      : benched
+                      ? "text-decoration-line-through text-secondary"
+                      : "text-secondary"
                   }`}
                 >
                   {playerInfo.name}
                 </div>
+                {player.isCaptain && (
+                  <div className="badge rounded-pill text-bg-success">2 x</div>
+                )}
                 {"points" in player && (
                   <div className="badge rounded-pill text-bg-primary">
                     {player.points as any}
                   </div>
-                )}
-                {player.isCaptain && (
-                  <div className="badge rounded-pill text-bg-success">x 2</div>
                 )}
               </div>
             );
