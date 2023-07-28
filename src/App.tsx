@@ -46,7 +46,7 @@ function App() {
                             </div>
                             {"points" in player && (
                               <div className="badge rounded-pill text-bg-primary">
-                                {player.points}
+                                {player.points as any}
                               </div>
                             )}
                             {player.isCaptain && (
