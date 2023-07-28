@@ -1,8 +1,8 @@
 import "./App.css";
 import players from "./data/players.json";
 import league from "./data/league.json";
-import { Collapse } from "reactstrap";
-import { useState } from "react";
+import { Collapse, UncontrolledTooltip } from "reactstrap";
+import { useId, useState } from "react";
 import countries from "./data/countries";
 
 const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
@@ -53,6 +53,8 @@ const TeamRound = ({
 }) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen ?? false);
 
+  const id = useId();
+
   return (
     <div className="card">
       <strong
@@ -83,7 +85,10 @@ const TeamRound = ({
                   } rounded-circle`}
                 />
                 <small>
-                  <div className="badge text-bg-secondary fw-bold">
+                  <div
+                    className="badge text-bg-secondary fw-bold text-center"
+                    style={{ width: 30 }}
+                  >
                     {playerInfo.position}
                   </div>
                 </small>
@@ -96,7 +101,18 @@ const TeamRound = ({
                       : "text-secondary"
                   }`}
                 >
-                  {playerInfo.name}
+                  <div id={"player" + id + player.playerId}>
+                    {playerInfo.name}
+                  </div>
+                  <UncontrolledTooltip
+                    target={"#" + CSS.escape("player" + id + player.playerId)}
+                  >
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                      minimumFractionDigits: 0,
+                    }).format(playerInfo.fantasyPrice)}
+                  </UncontrolledTooltip>
                 </div>
                 <div className="d-flex align-items-center gap-2">
                   {player.isCaptain && (
