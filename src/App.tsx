@@ -22,7 +22,7 @@ const countryToFlagMapping: { [key: string]: string } = {
   Haiti: "ht",
   Ireland: "ir",
   Italy: "it",
-  Jamaica: "ja",
+  Jamaica: "jm",
   Japan: "jp",
   Morocco: "ma",
   Netherlands: "nl",
