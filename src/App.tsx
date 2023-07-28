@@ -7,6 +7,41 @@ import countries from "./data/countries";
 
 const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
 
+const countryToFlagMapping: { [key: string]: string } = {
+  Australia: "au",
+  Argentina: "ar",
+  Brazil: "br",
+  Canada: "ca",
+  Colombia: "co",
+  "Costa Rica": "cr",
+  China: "cn",
+  Denmark: "dk",
+  England: "gb",
+  France: "fr",
+  Germany: "de",
+  Haiti: "ht",
+  Ireland: "ir",
+  Italy: "it",
+  Jamaica: "ja",
+  Japan: "jp",
+  Morocco: "ma",
+  Netherlands: "nl",
+  "New Zealand": "nz",
+  Norway: "no",
+  Nigeria: "ng",
+  Panama: "pa",
+  Philippines: "ph",
+  Portugal: "pt",
+  Spain: "es",
+  "South Africa": "za",
+  "South Korea": "kr",
+  Sweden: "se",
+  Switzerland: "ch",
+  USA: "us",
+  Vietnam: "vn",
+  Zambia: "zm",
+};
+
 const TeamRound = ({
   slug,
   round,
@@ -43,6 +78,16 @@ const TeamRound = ({
             return (
               <div className="d-flex gap-3 py-1">
                 <div
+                  className={`align-self-center fi fis fi-${
+                    countryToFlagMapping[playerInfo.country]
+                  } rounded-circle`}
+                />
+                <small>
+                  <div className="badge text-bg-secondary fw-bold">
+                    {playerInfo.position}
+                  </div>
+                </small>
+                <div
                   className={`flex-fill ${
                     player.played
                       ? ""
@@ -53,14 +98,18 @@ const TeamRound = ({
                 >
                   {playerInfo.name}
                 </div>
-                {player.isCaptain && (
-                  <div className="badge rounded-pill text-bg-success">2 x</div>
-                )}
-                {"points" in player && (
-                  <div className="badge rounded-pill text-bg-primary">
-                    {player.points as any}
-                  </div>
-                )}
+                <div className="d-flex align-items-center gap-2">
+                  {player.isCaptain && (
+                    <div className="badge rounded-pill text-bg-success">
+                      2 x
+                    </div>
+                  )}
+                  {"points" in player && (
+                    <div className="badge rounded-pill text-bg-primary">
+                      {player.points as any}
+                    </div>
+                  )}
+                </div>
               </div>
             );
           } else {
@@ -117,6 +166,7 @@ const Team = ({
 
 function App() {
   console.log("players", players);
+  console.log("countries", countries);
   console.log("league", league);
 
   return (
