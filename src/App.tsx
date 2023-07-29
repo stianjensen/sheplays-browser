@@ -136,6 +136,14 @@ const TeamRound = ({
             );
           }
         })}
+        {round.transfers ? (
+          <div className="d-flex justify-content-end align-items-center gap-3">
+            <em>Transfers</em>
+            <div className="badge rounded-pill text-bg-danger">
+              {round.transfers}
+            </div>
+          </div>
+        ) : null}
       </Collapse>
     </div>
   );
@@ -186,7 +194,7 @@ function App() {
   console.log("league", league);
 
   return (
-    <div className="d-flex pt-3" style={{ width: "100vw" }}>
+    <div className="d-flex py-3" style={{ width: "100vw" }}>
       <div className="container mx-auto" style={{ maxWidth: 600 }}>
         <h1>Teams</h1>
         <div className="list-group">
