@@ -25,7 +25,7 @@ jobs:
         run: yarn --frozen-lockfile
 
       - name: Download updated data
-      - run: |
+        run: |
           wget -O src/data/players.json https://yftmqgn5hc.execute-api.ap-southeast-2.amazonaws.com/prod/wwc/players
           wget -O src/data/league.json https://w0zrzoaltc.execute-api.ap-southeast-2.amazonaws.com/prod/wwc/leagues/vmesupert
 
