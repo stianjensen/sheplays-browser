@@ -6,6 +6,50 @@ import {useId, useState} from 'react';
 import countries from './data/countries';
 
 const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
+const currentRoundName = Object.keys(league.teams[0].score)
+  .filter(it => it !== 'total')
+  .sort()
+  .reverse()[0] as 'round-1' | 'round-2';
+const previousRoundScores = league.teams
+  .slice()
+  .sort((a, b) => b.score.total - b.score[currentRoundName] - (a.score.total - a.score[currentRoundName]));
+const rankings = Object.fromEntries(
+  teams.map(team => {
+    return [
+      team.teamName,
+      {
+        current: -1,
+        previous: -1,
+      },
+    ];
+  })
+);
+
+let previousUserCurrentScore = -1000;
+let previousUserCurrentRank = 1;
+for (let index = 0; index < teams.length; index++) {
+  if (teams[index].score.total === previousUserCurrentScore) {
+    rankings[teams[index].teamName].current = previousUserCurrentRank;
+  } else {
+    rankings[teams[index].teamName].current = index + 1;
+    previousUserCurrentRank = index + 1;
+  }
+  previousUserCurrentScore = teams[index].score.total;
+}
+
+let previousUserPreviousRoundScore = -1000;
+let previousUserPreviousRoundRank = 1;
+for (let index = 0; index < previousRoundScores.length; index++) {
+  const currentUserPreviousRoundScore =
+    previousRoundScores[index].score.total - previousRoundScores[index].score[currentRoundName];
+  if (currentUserPreviousRoundScore === previousUserPreviousRoundScore) {
+    rankings[previousRoundScores[index].teamName].previous = previousUserPreviousRoundRank;
+  } else {
+    rankings[previousRoundScores[index].teamName].previous = index + 1;
+    previousUserPreviousRoundRank = index + 1;
+  }
+  previousUserPreviousRoundScore = currentUserPreviousRoundScore;
+}
 
 const countryToFlagMapping: {[key: string]: string} = {
   Australia: 'au',
@@ -131,16 +175,30 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
 
   return (
     <div className={className}>
-      <h3
+      <h4
         className="d-flex align-items-center"
         style={{cursor: 'pointer'}}
         onClick={() => {
           setIsOpen(previous => !previous);
         }}
       >
+        <div style={{width: '1em'}}>
+          <small>
+            {rankings[team.teamName].current < rankings[team.teamName].previous ? (
+              <span className="fas fa-caret-up text-success" />
+            ) : rankings[team.teamName].current > rankings[team.teamName].previous ? (
+              <span className="fas fa-caret-down text-danger" />
+            ) : (
+              ''
+            )}
+          </small>
+        </div>
+        <div className="text-muted me-3" style={{minWidth: '1.2em'}}>
+          <small>{rankings[team.teamName].current}.</small>
+        </div>
         <div className="flex-fill">{team.teamName}</div>
         <div className="badge rounded-pill text-bg-secondary ms-3">{team.score.total}</div>
-      </h3>
+      </h4>
       <Collapse isOpen={isOpen}>
         <div className="d-flex flex-column gap-3">
           {Object.entries(team.results).map(([slug, round], index, results) => (
