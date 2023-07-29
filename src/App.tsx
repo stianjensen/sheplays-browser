@@ -16,7 +16,7 @@ const countryToFlagMapping: { [key: string]: string } = {
   "Costa Rica": "cr",
   China: "cn",
   Denmark: "dk",
-  England: "gb",
+  England: "eng",
   France: "fr",
   Germany: "de",
   Haiti: "ht",
