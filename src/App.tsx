@@ -118,59 +118,61 @@ const TeamRound = ({
         <div className="badge rounded-pill tabular-nums text-bg-secondary">{round.score}</div>
       </strong>
       <Collapse isOpen={isOpen} className="card-body">
-        {round.players.map(player => {
-          const playerInfo = players.find(it => it.playerId === player.playerId);
-          if (playerInfo) {
-            const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
-            const benched = countryPlayed && !player.played;
-            return (
-              <div className="d-flex gap-3 py-1" key={player.playerId}>
-                <div
-                  className={`align-self-center shadow-sm fi fis fi-${
-                    countryToFlagMapping[playerInfo.country]
-                  } rounded-circle`}
-                />
-                <small>
-                  <div className="badge text-bg-secondary fw-bold text-center" style={{width: 30}}>
-                    {playerInfo.position}
+        <div className="d-flex flex-column gap-2">
+          {round.players.map(player => {
+            const playerInfo = players.find(it => it.playerId === player.playerId);
+            if (playerInfo) {
+              const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
+              const benched = countryPlayed && !player.played;
+              return (
+                <div className="d-flex gap-3" key={player.playerId}>
+                  <div
+                    className={`align-self-center shadow-sm fi fis fi-${
+                      countryToFlagMapping[playerInfo.country]
+                    } rounded-circle`}
+                  />
+                  <small>
+                    <div className="badge text-bg-secondary fw-bold text-center" style={{width: 30}}>
+                      {playerInfo.position}
+                    </div>
+                  </small>
+                  <div
+                    className={
+                      player.played ? '' : benched ? 'text-decoration-line-through text-secondary' : 'text-secondary'
+                    }
+                  >
+                    <div id={'player' + id + player.playerId}>{playerInfo.name}</div>
+                    <UncontrolledTooltip target={'#' + CSS.escape('player' + id + player.playerId)}>
+                      {new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 0,
+                      }).format(playerInfo.fantasyPrice)}
+                    </UncontrolledTooltip>
                   </div>
-                </small>
-                <div
-                  className={
-                    player.played ? '' : benched ? 'text-decoration-line-through text-secondary' : 'text-secondary'
-                  }
-                >
-                  <div id={'player' + id + player.playerId}>{playerInfo.name}</div>
-                  <UncontrolledTooltip target={'#' + CSS.escape('player' + id + player.playerId)}>
-                    {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: 'USD',
-                      minimumFractionDigits: 0,
-                    }).format(playerInfo.fantasyPrice)}
-                  </UncontrolledTooltip>
+                  <div className="d-flex align-items-center gap-2 ms-auto">
+                    {player.isCaptain && <div className="badge rounded-pill text-bg-success">2 x</div>}
+                    {'points' in player && (
+                      <div className="badge rounded-pill tabular-nums text-bg-primary">{player.points as any}</div>
+                    )}
+                  </div>
                 </div>
-                <div className="d-flex align-items-center gap-2 ms-auto">
-                  {player.isCaptain && <div className="badge rounded-pill text-bg-success">2 x</div>}
-                  {'points' in player && (
-                    <div className="badge rounded-pill tabular-nums text-bg-primary">{player.points as any}</div>
-                  )}
+              );
+            } else {
+              return (
+                <div>
+                  <em>Player info missing</em>
                 </div>
-              </div>
-            );
-          } else {
-            return (
-              <div>
-                <em>Player info missing</em>
-              </div>
-            );
-          }
-        })}
-        {round.transfers ? (
-          <div className="d-flex justify-content-end align-items-center gap-3">
-            <em>Transfers</em>
-            <div className="badge rounded-pill tabular-nums text-bg-danger">{round.transfers}</div>
-          </div>
-        ) : null}
+              );
+            }
+          })}
+          {round.transfers ? (
+            <div className="d-flex justify-content-end align-items-center gap-3">
+              <em>Transfers</em>
+              <div className="badge rounded-pill tabular-nums text-bg-danger">{round.transfers}</div>
+            </div>
+          ) : null}
+        </div>
       </Collapse>
     </div>
   );
@@ -182,7 +184,7 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
   return (
     <div className={className}>
       <h4
-        className="d-flex align-items-center"
+        className="d-flex align-items-center mb-0"
         style={{cursor: 'pointer'}}
         onClick={() => {
           setIsOpen(previous => !previous);
@@ -206,7 +208,7 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
         <div className="badge rounded-pill tabular-nums text-bg-secondary ms-3">{team.score.total}</div>
       </h4>
       <Collapse isOpen={isOpen}>
-        <div className="d-flex flex-column gap-3">
+        <div className="d-flex flex-column gap-3 pt-3">
           {Object.entries(team.results).map(([slug, round], index, results) => (
             <TeamRound key={slug} slug={slug} round={round} initialIsOpen={index === results.length - 1} />
           ))}
