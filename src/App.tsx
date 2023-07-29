@@ -187,7 +187,7 @@ function App() {
 
   return (
     <div className="d-flex pt-3" style={{ width: "100vw" }}>
-      <div className="container mx-auto">
+      <div className="container mx-auto" style={{ maxWidth: 600 }}>
         <h1>Teams</h1>
         <div className="list-group">
           {teams.map((team) => (
