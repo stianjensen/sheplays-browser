@@ -3,6 +3,7 @@ import league from './data/league.json';
 import {Collapse, UncontrolledTooltip} from 'reactstrap';
 import {useId, useState} from 'react';
 import countries from './data/countries';
+import {FullPlayerRoundInfo} from './types';
 
 const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
 const currentRoundName = Object.keys(league.teams[0].score)
@@ -104,6 +105,22 @@ const TeamRound = ({
   const [isOpen, setIsOpen] = useState(initialIsOpen ?? false);
 
   const id = useId();
+  const roundPlayers: FullPlayerRoundInfo[] = round.players.map(player => {
+    const playerInfo = players.find(it => it.playerId === player.playerId);
+    if (playerInfo) {
+      const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
+      const benched = countryPlayed && !player.played;
+      return {
+        ...playerInfo,
+        ...player,
+        benched,
+      };
+    } else {
+      return undefined;
+    }
+  });
+  const playersPlayed = roundPlayers.filter(player => player?.played).length;
+  const playersAvailable = Math.min(11, 15 - roundPlayers.filter(player => player?.benched).length);
 
   return (
     <div className="card">
@@ -114,18 +131,21 @@ const TeamRound = ({
         }}
         style={{cursor: 'pointer'}}
       >
-        <div className="flex-fill">{unslugify(slug)}</div>
-        <div className="badge rounded-pill tabular-nums text-bg-secondary">{round.score}</div>
+        <div>{unslugify(slug)}</div>
+        <div>
+          <small>
+            <span className="fas fa-shirt ms-4 me-2 text-muted" />
+            {playersPlayed} / {playersAvailable}
+          </small>
+        </div>
+        <div className="badge rounded-pill tabular-nums text-bg-secondary ms-auto">{round.score}</div>
       </strong>
       <Collapse isOpen={isOpen} className="card-body">
         <div className="d-flex flex-column gap-2">
-          {round.players.map(player => {
-            const playerInfo = players.find(it => it.playerId === player.playerId);
+          {roundPlayers.map(playerInfo => {
             if (playerInfo) {
-              const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
-              const benched = countryPlayed && !player.played;
               return (
-                <div className="d-flex gap-3" key={player.playerId}>
+                <div className="d-flex gap-3" key={playerInfo.playerId}>
                   <div
                     className={`align-self-center shadow-sm fi fis fi-${
                       countryToFlagMapping[playerInfo.country]
@@ -138,11 +158,15 @@ const TeamRound = ({
                   </small>
                   <div
                     className={
-                      player.played ? '' : benched ? 'text-decoration-line-through text-secondary' : 'text-secondary'
+                      playerInfo.played
+                        ? ''
+                        : playerInfo.benched
+                        ? 'text-decoration-line-through text-secondary'
+                        : 'text-secondary'
                     }
                   >
-                    <div id={'player' + id + player.playerId}>{playerInfo.name}</div>
-                    <UncontrolledTooltip target={'#' + CSS.escape('player' + id + player.playerId)}>
+                    <div id={'player' + id + playerInfo.playerId}>{playerInfo.name}</div>
+                    <UncontrolledTooltip target={'#' + CSS.escape('player' + id + playerInfo.playerId)}>
                       {new Intl.NumberFormat('en-US', {
                         style: 'currency',
                         currency: 'USD',
@@ -151,9 +175,9 @@ const TeamRound = ({
                     </UncontrolledTooltip>
                   </div>
                   <div className="d-flex align-items-center gap-2 ms-auto">
-                    {player.isCaptain && <div className="badge rounded-pill text-bg-success">2 x</div>}
-                    {'points' in player && (
-                      <div className="badge rounded-pill tabular-nums text-bg-primary">{player.points as any}</div>
+                    {playerInfo.isCaptain && <div className="badge rounded-pill text-bg-success">2 x</div>}
+                    {playerInfo.played && (
+                      <div className="badge rounded-pill tabular-nums text-bg-primary">{playerInfo.points as any}</div>
                     )}
                   </div>
                 </div>
