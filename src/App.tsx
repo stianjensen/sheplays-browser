@@ -1,4 +1,3 @@
-import './App.css';
 import players from './data/players.json';
 import league from './data/league.json';
 import {Collapse, UncontrolledTooltip} from 'reactstrap';
@@ -116,7 +115,7 @@ const TeamRound = ({
         style={{cursor: 'pointer'}}
       >
         <div className="flex-fill">{unslugify(slug)}</div>
-        <div className="badge rounded-pill text-bg-secondary">{round.score}</div>
+        <div className="badge rounded-pill tabular-nums text-bg-secondary">{round.score}</div>
       </strong>
       <Collapse isOpen={isOpen} className="card-body">
         {round.players.map(player => {
@@ -153,7 +152,7 @@ const TeamRound = ({
                 <div className="d-flex align-items-center gap-2 ms-auto">
                   {player.isCaptain && <div className="badge rounded-pill text-bg-success">2 x</div>}
                   {'points' in player && (
-                    <div className="badge rounded-pill text-bg-primary">{player.points as any}</div>
+                    <div className="badge rounded-pill tabular-nums text-bg-primary">{player.points as any}</div>
                   )}
                 </div>
               </div>
@@ -169,7 +168,7 @@ const TeamRound = ({
         {round.transfers ? (
           <div className="d-flex justify-content-end align-items-center gap-3">
             <em>Transfers</em>
-            <div className="badge rounded-pill text-bg-danger">{round.transfers}</div>
+            <div className="badge rounded-pill tabular-nums text-bg-danger">{round.transfers}</div>
           </div>
         ) : null}
       </Collapse>
@@ -204,7 +203,7 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
           <small>{rankings[team.teamName].current}.</small>
         </div>
         <div className="flex-fill">{team.teamName}</div>
-        <div className="badge rounded-pill text-bg-secondary ms-3">{team.score.total}</div>
+        <div className="badge rounded-pill tabular-nums text-bg-secondary ms-3">{team.score.total}</div>
       </h4>
       <Collapse isOpen={isOpen}>
         <div className="d-flex flex-column gap-3">
