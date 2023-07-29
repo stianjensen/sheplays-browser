@@ -60,7 +60,7 @@ const countryToFlagMapping: {[key: string]: string} = {
   'Costa Rica': 'cr',
   China: 'cn',
   Denmark: 'dk',
-  England: 'eng',
+  England: 'gb-eng',
   France: 'fr',
   Germany: 'de',
   Haiti: 'ht',
