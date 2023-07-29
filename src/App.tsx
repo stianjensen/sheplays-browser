@@ -51,6 +51,13 @@ for (let index = 0; index < previousRoundScores.length; index++) {
   previousUserPreviousRoundScore = currentUserPreviousRoundScore;
 }
 
+function unslugify(raw: string): string {
+  return raw
+    .split('-')
+    .map(part => part[0].toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
 const countryToFlagMapping: {[key: string]: string} = {
   Australia: 'au',
   Argentina: 'ar',
@@ -102,13 +109,13 @@ const TeamRound = ({
   return (
     <div className="card">
       <strong
-        className="card-header d-flex"
+        className="card-header d-flex align-items-center"
         onClick={() => {
           setIsOpen(previous => !previous);
         }}
         style={{cursor: 'pointer'}}
       >
-        <div className="flex-fill">{slug}</div>
+        <div className="flex-fill">{unslugify(slug)}</div>
         <div className="badge rounded-pill text-bg-secondary">{round.score}</div>
       </strong>
       <Collapse isOpen={isOpen} className="card-body">
