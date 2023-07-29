@@ -80,7 +80,7 @@ const TeamRound = ({
             return (
               <div className="d-flex gap-3 py-1">
                 <div
-                  className={`align-self-center fi fis fi-${
+                  className={`align-self-center shadow-sm fi fis fi-${
                     countryToFlagMapping[playerInfo.country]
                   } rounded-circle`}
                 />
@@ -93,13 +93,13 @@ const TeamRound = ({
                   </div>
                 </small>
                 <div
-                  className={`flex-fill ${
+                  className={
                     player.played
                       ? ""
                       : benched
                       ? "text-decoration-line-through text-secondary"
                       : "text-secondary"
-                  }`}
+                  }
                 >
                   <div id={"player" + id + player.playerId}>
                     {playerInfo.name}
@@ -114,7 +114,7 @@ const TeamRound = ({
                     }).format(playerInfo.fantasyPrice)}
                   </UncontrolledTooltip>
                 </div>
-                <div className="d-flex align-items-center gap-2">
+                <div className="d-flex align-items-center gap-2 ms-auto">
                   {player.isCaptain && (
                     <div className="badge rounded-pill text-bg-success">
                       2 x
