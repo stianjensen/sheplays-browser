@@ -233,9 +233,19 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
       </h4>
       <Collapse isOpen={isOpen}>
         <div className="d-flex flex-column gap-3 pt-3">
-          {Object.entries(team.results).map(([slug, round], index, results) => (
-            <TeamRound key={slug} slug={slug} round={round} initialIsOpen={index === results.length - 1} />
-          ))}
+          {Object.entries(team.results)
+            .sort(([slugA, _a], [slugB, _b]) => {
+              if (slugA < slugB) {
+                return -1;
+              }
+              if (slugA > slugB) {
+                return 1;
+              }
+              return 0;
+            })
+            .map(([slug, round], index, results) => (
+              <TeamRound key={slug} slug={slug} round={round} initialIsOpen={index === results.length - 1} />
+            ))}
         </div>
       </Collapse>
     </div>
