@@ -93,6 +93,33 @@ const countryToFlagMapping: {[key: string]: string} = {
   Zambia: 'zm',
 };
 
+const PlayerPosition = ({position}: {position: string}) => {
+  let color: string;
+  switch (position) {
+    case 'FW':
+      color = 'success';
+      break;
+    case 'MF':
+      color = 'warning';
+      break;
+    case 'DF':
+      color = 'danger';
+      break;
+    case 'GK':
+      color = 'secondary';
+      break;
+    default:
+      color = 'secondary';
+  }
+  return (
+    <small>
+      <div className={`badge bg-${color}-subtle text-${color}-emphasis fw-bold text-center`} style={{width: 30}}>
+        {position}
+      </div>
+    </small>
+  );
+};
+
 const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
   const id = useId();
 
@@ -101,11 +128,7 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
       <div
         className={`align-self-center shadow-sm fi fis fi-${countryToFlagMapping[playerInfo.country]} rounded-circle`}
       />
-      <small>
-        <div className="badge text-bg-secondary fw-bold text-center" style={{width: 30}}>
-          {playerInfo.position}
-        </div>
-      </small>
+      <PlayerPosition position={playerInfo.position} />
       <div
         className={`d-flex align-items-baseline ${
           playerInfo.played ? '' : playerInfo.benched ? 'text-decoration-line-through text-secondary' : 'text-secondary'
