@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Data is auto-fetched on deploy and does not need to be checked in
+src/data/league.json
+src/data/players.json
