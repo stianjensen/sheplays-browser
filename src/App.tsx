@@ -273,7 +273,10 @@ function App() {
   return (
     <div className="d-flex py-3 bg-light" style={{width: '100vw'}}>
       <div className="container mx-auto" style={{maxWidth: 600}}>
-        <h1>Leah Williamson minneliga</h1>
+        <div className="mb-3 d-flex flex-row align-items-center justify-content-start">
+          <img className="rounded-circle me-3" src="/leah.jpeg" style={{height: 50}} />
+          <h1 className="mb-0">Leah Williamson minneliga</h1>
+        </div>
         <div className="list-group">
           {teams.map(team => (
             <Team key={team.teamName} team={team} className="list-group-item" />
