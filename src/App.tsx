@@ -108,7 +108,11 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
       </small>
       <div
         className={`d-flex align-items-baseline ${
-          playerInfo.played ? '' : playerInfo.benched ? 'text-decoration-line-through text-secondary' : 'text-secondary'
+          playerInfo.played
+            ? ''
+            : playerInfo.benched || playerInfo.injured
+            ? 'text-decoration-line-through text-secondary'
+            : 'text-secondary'
         }`}
       >
         <div id={'player' + id + playerInfo.playerId}>{playerInfo.name}</div>
@@ -119,11 +123,19 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
             minimumFractionDigits: 0,
           }).format(playerInfo.fantasyPrice)}
         </UncontrolledTooltip>
-        {!playerInfo.played && !playerInfo.benched && (
+        {!playerInfo.played && !playerInfo.benched && !playerInfo.injured && (
           <small>
             <span
               className="ms-2 far fa-clock"
               title="The player will receive points once their team has played – as long as they are not benched."
+            />
+          </small>
+        )}
+        {!playerInfo.played && playerInfo.injured && (
+          <small>
+            <span
+              className="ms-2 fas fa-user-injured text-danger"
+              title="The player is injured and will therefore not play this round."
             />
           </small>
         )}
