@@ -93,6 +93,43 @@ const countryToFlagMapping: {[key: string]: string} = {
   Zambia: 'zm',
 };
 
+const Player = ({playerInfo}: {playerInfo: NonNullable<FullPlayerRoundInfo>}) => {
+  const id = useId();
+
+  return (
+    <div className="d-flex gap-3">
+      <div
+        className={`align-self-center shadow-sm fi fis fi-${countryToFlagMapping[playerInfo.country]} rounded-circle`}
+      />
+      <small>
+        <div className="badge text-bg-secondary fw-bold text-center" style={{width: 30}}>
+          {playerInfo.position}
+        </div>
+      </small>
+      <div
+        className={
+          playerInfo.played ? '' : playerInfo.benched ? 'text-decoration-line-through text-secondary' : 'text-secondary'
+        }
+      >
+        <div id={'player' + id + playerInfo.playerId}>{playerInfo.name}</div>
+        <UncontrolledTooltip target={'#' + CSS.escape('player' + id + playerInfo.playerId)}>
+          {new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+          }).format(playerInfo.fantasyPrice)}
+        </UncontrolledTooltip>
+      </div>
+      <div className="d-flex align-items-center gap-2 ms-auto">
+        {playerInfo.isCaptain && <div className="badge rounded-pill text-bg-success">2 x</div>}
+        {playerInfo.played && (
+          <div className="badge rounded-pill tabular-nums text-bg-primary">{playerInfo.points}</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const TeamRound = ({
   slug,
   round,
@@ -104,7 +141,6 @@ const TeamRound = ({
 }) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen ?? false);
 
-  const id = useId();
   const roundPlayers: FullPlayerRoundInfo[] = round.players.map(player => {
     const playerInfo = players.find(it => it.playerId === player.playerId);
     if (playerInfo) {
@@ -142,54 +178,15 @@ const TeamRound = ({
       </strong>
       <Collapse isOpen={isOpen} className="card-body">
         <div className="d-flex flex-column gap-2">
-          {roundPlayers.map(playerInfo => {
-            if (playerInfo) {
-              return (
-                <div className="d-flex gap-3" key={playerInfo.playerId}>
-                  <div
-                    className={`align-self-center shadow-sm fi fis fi-${
-                      countryToFlagMapping[playerInfo.country]
-                    } rounded-circle`}
-                  />
-                  <small>
-                    <div className="badge text-bg-secondary fw-bold text-center" style={{width: 30}}>
-                      {playerInfo.position}
-                    </div>
-                  </small>
-                  <div
-                    className={
-                      playerInfo.played
-                        ? ''
-                        : playerInfo.benched
-                        ? 'text-decoration-line-through text-secondary'
-                        : 'text-secondary'
-                    }
-                  >
-                    <div id={'player' + id + playerInfo.playerId}>{playerInfo.name}</div>
-                    <UncontrolledTooltip target={'#' + CSS.escape('player' + id + playerInfo.playerId)}>
-                      {new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: 'USD',
-                        minimumFractionDigits: 0,
-                      }).format(playerInfo.fantasyPrice)}
-                    </UncontrolledTooltip>
-                  </div>
-                  <div className="d-flex align-items-center gap-2 ms-auto">
-                    {playerInfo.isCaptain && <div className="badge rounded-pill text-bg-success">2 x</div>}
-                    {playerInfo.played && (
-                      <div className="badge rounded-pill tabular-nums text-bg-primary">{playerInfo.points as any}</div>
-                    )}
-                  </div>
-                </div>
-              );
-            } else {
-              return (
-                <div>
-                  <em>Player info missing</em>
-                </div>
-              );
-            }
-          })}
+          {roundPlayers.map((playerInfo, index) =>
+            playerInfo ? (
+              <Player key={playerInfo.playerId} playerInfo={playerInfo} />
+            ) : (
+              <div key={index}>
+                <em>Player info missing</em>
+              </div>
+            )
+          )}
           {round.transfers ? (
             <div className="d-flex justify-content-end align-items-center gap-3">
               <em>Transfers</em>
