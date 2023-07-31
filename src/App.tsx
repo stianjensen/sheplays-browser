@@ -202,32 +202,48 @@ const TeamRound = ({
 const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const ranking = rankings[team.teamName];
+
   return (
     <div className={className}>
-      <h4
-        className="d-flex align-items-center mb-0"
+      <div
+        className="d-flex align-items-center gap-3"
         style={{cursor: 'pointer'}}
         onClick={() => {
           setIsOpen(previous => !previous);
         }}
       >
-        <div style={{width: '1em'}}>
-          <small>
-            {rankings[team.teamName].current < rankings[team.teamName].previous ? (
-              <span className="fas fa-caret-up text-success" />
-            ) : rankings[team.teamName].current > rankings[team.teamName].previous ? (
-              <span className="fas fa-caret-down text-danger" />
+        <div className="d-flex align-items-center gap-2">
+          <div className="text-center" style={{width: '1em'}}>
+            {ranking.current < ranking.previous ? (
+              <div className="d-flex flex-column">
+                <span className="fas fa-fw fa-caret-up text-success" />
+                <small>
+                  <small className="text-success d-block">+{ranking.previous - ranking.current}</small>
+                </small>
+              </div>
+            ) : ranking.current > ranking.previous ? (
+              <div className="d-flex flex-column">
+                <span className="fas fa-fw fa-caret-down text-danger" />
+                <small>
+                  <small className="text-danger d-block">-{ranking.current - ranking.previous}</small>
+                </small>
+              </div>
             ) : (
               ''
             )}
-          </small>
+          </div>
+          <div className="text-muted text-end tabular-nums" style={{minWidth: '1.3em'}}>
+            {rankings[team.teamName].current}.
+          </div>
         </div>
-        <div className="text-muted me-3" style={{minWidth: '1.2em'}}>
-          <small>{rankings[team.teamName].current}.</small>
-        </div>
-        <div className="flex-fill">{team.teamName}</div>
-        <div className="badge rounded-pill tabular-nums text-bg-secondary ms-3">{team.score.total}</div>
-      </h4>
+        <h5 className="flex-fill d-flex align-items-center gap-3 mb-0">
+          <div className="flex-fill">{team.teamName}</div>
+          <div className="badge rounded-pill tabular-nums bg-primary-subtle text-primary-emphasis">
+            {team.score.total}
+          </div>
+        </h5>
+      </div>
       <Collapse isOpen={isOpen}>
         <div className="d-flex flex-column gap-3 pt-3">
           {Object.entries(team.results)
@@ -255,9 +271,9 @@ function App() {
   console.log('league', league);
 
   return (
-    <div className="d-flex py-3" style={{width: '100vw'}}>
+    <div className="d-flex py-3 bg-light" style={{width: '100vw'}}>
       <div className="container mx-auto" style={{maxWidth: 600}}>
-        <h1>Teams</h1>
+        <h1>Leah Williamson minneliga</h1>
         <div className="list-group">
           {teams.map(team => (
             <Team key={team.teamName} team={team} className="list-group-item" />
