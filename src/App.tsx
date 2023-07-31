@@ -93,7 +93,7 @@ const countryToFlagMapping: {[key: string]: string} = {
   Zambia: 'zm',
 };
 
-const Player = ({playerInfo}: {playerInfo: NonNullable<FullPlayerRoundInfo>}) => {
+const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
   const id = useId();
 
   return (
@@ -107,9 +107,9 @@ const Player = ({playerInfo}: {playerInfo: NonNullable<FullPlayerRoundInfo>}) =>
         </div>
       </small>
       <div
-        className={
+        className={`d-flex align-items-baseline ${
           playerInfo.played ? '' : playerInfo.benched ? 'text-decoration-line-through text-secondary' : 'text-secondary'
-        }
+        }`}
       >
         <div id={'player' + id + playerInfo.playerId}>{playerInfo.name}</div>
         <UncontrolledTooltip target={'#' + CSS.escape('player' + id + playerInfo.playerId)}>
@@ -119,13 +119,31 @@ const Player = ({playerInfo}: {playerInfo: NonNullable<FullPlayerRoundInfo>}) =>
             minimumFractionDigits: 0,
           }).format(playerInfo.fantasyPrice)}
         </UncontrolledTooltip>
-      </div>
-      <div className="d-flex align-items-center gap-2 ms-auto">
-        {playerInfo.isCaptain && <div className="badge rounded-pill text-bg-success">2 x</div>}
-        {playerInfo.played && (
-          <div className="badge rounded-pill tabular-nums text-bg-primary">{playerInfo.points}</div>
+        {!playerInfo.played && !playerInfo.benched && (
+          <small>
+            <span
+              className="ms-2 far fa-clock"
+              title="The player will receive points once their team has played – as long as they are not benched."
+            />
+          </small>
         )}
       </div>
+      {playerInfo.played && (
+        <div className="align-self-center ms-auto">
+          {playerInfo.isCaptain ? (
+            <div className="d-flex">
+              <div className="badge pe-1 rounded-start-pill rounded-end-0 bg-success-subtle text-success-emphasis">
+                2 x
+              </div>
+              <small className="badge ps-1 rounded-end-pill rounded-start-0 tabular-nums text-bg-primary">
+                {playerInfo.points as any}
+              </small>
+            </div>
+          ) : (
+            <div className="badge rounded-pill tabular-nums text-bg-primary">{playerInfo.points}</div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -141,7 +159,7 @@ const TeamRound = ({
 }) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen ?? false);
 
-  const roundPlayers: FullPlayerRoundInfo[] = round.players.map(player => {
+  const roundPlayers: (FullPlayerRoundInfo | undefined)[] = round.players.map(player => {
     const playerInfo = players.find(it => it.playerId === player.playerId);
     if (playerInfo) {
       const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
@@ -170,11 +188,13 @@ const TeamRound = ({
         <div>{unslugify(slug)}</div>
         <div>
           <small>
-            <span className="fas fa-shirt ms-4 me-2 text-muted" />
+            <span className="fas fa-shirt ms-4 me-2 text-primary" />
             {playersPlayed} / {playersAvailable}
           </small>
         </div>
-        <div className="badge rounded-pill tabular-nums text-bg-secondary ms-auto">{round.score}</div>
+        <div className="badge rounded-pill tabular-nums bg-primary-subtle text-primary-emphasis ms-auto">
+          {round.score}
+        </div>
       </strong>
       <Collapse isOpen={isOpen} className="card-body">
         <div className="d-flex flex-column gap-2">
