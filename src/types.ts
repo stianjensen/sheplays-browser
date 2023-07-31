@@ -25,4 +25,4 @@ export type PlayerRoundInfo = {
   points?: number;
 };
 
-export type FullPlayerRoundInfo = (PlayerInfo & PlayerRoundInfo) | undefined;
+export type FullPlayerRoundInfo = PlayerInfo & PlayerRoundInfo;
