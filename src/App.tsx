@@ -58,6 +58,35 @@ function unslugify(raw: string): string {
     .join(' ');
 }
 
+function calculateTeamCompleteness(roundPlayers: (FullPlayerRoundInfo | undefined)[]): {
+  playersPlayed: number;
+  playersAvailable: number;
+  teamIsComplete: boolean;
+} {
+  const playersPlayed = roundPlayers.filter(player => player?.played).length;
+  const playersAvailable = Math.min(11, roundPlayers.length - roundPlayers.filter(player => player?.benched).length);
+
+  const firstPendingPlayerIndex = roundPlayers.findIndex(
+    player => !(player?.played || player?.benched || player?.injured)
+  );
+  const lastPlayedPlayerIndex = roundPlayers.findLastIndex(player => player?.played);
+
+  const noPendingPlayers = firstPendingPlayerIndex === -1;
+  /* If all players that are pending are _behind_ all players that have played, nobody will come on
+     the field to overtake/change the "temporary" scores that are currently recorded.
+     If you currently have temporary points recorded from a bench-player while waiting for your captain to play,
+     the scores will change significantly once the captain plays.
+  */
+  const noPendingPlayersWillOvertakePlayedPlayers = firstPendingPlayerIndex > lastPlayedPlayerIndex;
+
+  const teamIsComplete = noPendingPlayers || (playersPlayed == 11 && noPendingPlayersWillOvertakePlayedPlayers);
+  return {
+    playersPlayed,
+    playersAvailable,
+    teamIsComplete,
+  };
+}
+
 const countryToFlagMapping: {[key: string]: string} = {
   Australia: 'au',
   Argentina: 'ar',
@@ -208,8 +237,7 @@ const TeamRound = ({
       return undefined;
     }
   });
-  const playersPlayed = roundPlayers.filter(player => player?.played).length;
-  const playersAvailable = Math.min(11, 15 - roundPlayers.filter(player => player?.benched).length);
+  const {playersPlayed, playersAvailable, teamIsComplete} = calculateTeamCompleteness(roundPlayers);
 
   return (
     <div className="card">
@@ -224,7 +252,14 @@ const TeamRound = ({
         <div>
           <small>
             <span className="fas fa-shirt ms-4 me-2 text-primary" />
-            {playersPlayed} / {playersAvailable}
+            <span className="tabular-nums">{playersPlayed}</span>
+            {playersPlayed === 11 && !teamIsComplete && (
+              <span title="Team has starters that haven't played yet. Current score includes points from players on the bench">
+                *
+              </span>
+            )}{' '}
+            / <span className="tabular-nums">{playersAvailable}</span>
+            {teamIsComplete && <span className="fas fa-check ms-2 text-primary" />}
           </small>
         </div>
         <div className="badge rounded-pill tabular-nums bg-primary-subtle text-primary-emphasis ms-auto">
