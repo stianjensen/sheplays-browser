@@ -1,3 +1,5 @@
+export type Position = 'GK' | 'DF' | 'MF' | 'FW';
+
 export type PlayerInfo =
   | {
       score: {
@@ -13,7 +15,7 @@ export type PlayerInfo =
       clubD?: string | null;
       playerId: string;
       fantasyPrice: number;
-      position: string;
+      position: Position;
     }
   | undefined;
 

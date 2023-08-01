@@ -4,7 +4,7 @@ import {Collapse, UncontrolledTooltip} from 'reactstrap';
 import {useId, useState} from 'react';
 import countries, {countryToFlagMapping} from './data/countries';
 import deadlines from './data/deadlines.json';
-import {FullPlayerRoundInfo} from './types';
+import {FullPlayerRoundInfo, PlayerInfo} from './types';
 import {
   createHashRouter,
   createRoutesFromElements,
@@ -69,6 +69,25 @@ function unslugify(raw: string): string {
     .join(' ');
 }
 
+function orderPositions(a: PlayerInfo, b: PlayerInfo): number {
+  if (a?.position && b?.position) {
+    const positionValue = {
+      GK: 0,
+      DF: 1,
+      MF: 2,
+      FW: 3,
+    };
+    return positionValue[a.position] - positionValue[b.position];
+  }
+  if (!a?.position && b?.position) {
+    return -1;
+  }
+  if (a?.position && !b?.position) {
+    return 1;
+  }
+  return 0;
+}
+
 function calculateTeamCompleteness(roundPlayers: (FullPlayerRoundInfo | undefined)[]): {
   playersPlayed: number;
   playersAvailable: number;
@@ -127,16 +146,16 @@ export const PlayerPosition = ({position}: {position: string}) => {
   return (
     <small>
       <div className={`badge bg-${color}-subtle text-${color}-emphasis fw-bold text-center`} style={{width: 30}}>
-        {position}
+        {position ?? '?'}
       </div>
     </small>
   );
 };
 
-const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
+const Player = ({playerInfo}: {playerInfo?: FullPlayerRoundInfo}) => {
   const id = useId();
 
-  return (
+  return playerInfo ? (
     <div className="d-flex gap-3">
       <Country country={playerInfo.country} />
       <PlayerPosition position={playerInfo.position} />
@@ -155,7 +174,7 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
             style: 'currency',
             currency: 'USD',
             minimumFractionDigits: 0,
-          }).format(playerInfo.fantasyPrice)}
+          }).format(playerInfo.fantasyPrice ?? 0)}
         </UncontrolledTooltip>
         {playerInfo.isDesignatedCaptain && (
           <div className="ms-2 badge rounded-pill bg-success-subtle text-success-emphasis">C</div>
@@ -196,6 +215,10 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
           )}
         </div>
       )}
+    </div>
+  ) : (
+    <div>
+      <em>Player info missing</em>
     </div>
   );
 };
@@ -273,7 +296,7 @@ const TeamRound = ({
       const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
       const out = !countries[playerInfo.club][slug]?.remaining || (countryPlayed && !player.played);
       return {
-        ...playerInfo,
+        ...(playerInfo as PlayerInfo),
         ...player,
         out,
         isDesignatedCaptain: index === 0,
@@ -284,6 +307,9 @@ const TeamRound = ({
     }
   });
   const {playersPlayed, playersAvailable, teamIsComplete} = calculateTeamCompleteness(roundPlayers);
+  const onFieldPlayers = teamIsComplete ? roundPlayers.filter(player => player?.played) : roundPlayers.slice(0, 11);
+  const benchedPlayers = teamIsComplete ? roundPlayers.filter(player => !player?.played) : roundPlayers.slice(11);
+  onFieldPlayers.sort(orderPositions);
 
   return (
     <div className={`list-group-item ps-0 ${className ?? ''}`}>
@@ -315,7 +341,7 @@ const TeamRound = ({
       </div>
       <Collapse isOpen={isOpen} className="card-body">
         <div className="d-flex flex-column gap-2 pt-3">
-          {roundPlayers.map((playerInfo, index) =>
+          {onFieldPlayers.map((playerInfo, index) =>
             playerInfo ? (
               <Player key={playerInfo.playerId} playerInfo={playerInfo} />
             ) : (
@@ -324,6 +350,12 @@ const TeamRound = ({
               </div>
             )
           )}
+          <div className="d-flex flex-row flex-fill">
+            Bench <hr />
+          </div>
+          {benchedPlayers.map((playerInfo, index) => (
+            <Player key={playerInfo?.playerId ?? index} playerInfo={playerInfo} />
+          ))}
           {round.transfers ? (
             <div className="d-flex justify-content-end align-items-center gap-3">
               <em>Transfers</em>
