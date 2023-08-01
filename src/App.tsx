@@ -157,6 +157,12 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
             minimumFractionDigits: 0,
           }).format(playerInfo.fantasyPrice)}
         </UncontrolledTooltip>
+        {playerInfo.isDesignatedCaptain && (
+          <div className="ms-2 badge rounded-pill bg-success-subtle text-success-emphasis">C</div>
+        )}
+        {playerInfo.isDesignatedViceCaptain && (
+          <div className="ms-2 badge rounded-pill bg-success-subtle text-success-emphasis">V</div>
+        )}
         {!playerInfo.played && !playerInfo.out && !playerInfo.injured && (
           <small>
             <span
@@ -261,7 +267,7 @@ const TeamRound = ({
 }) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen ?? false);
 
-  const roundPlayers: (FullPlayerRoundInfo | undefined)[] = round.players.map(player => {
+  const roundPlayers: (FullPlayerRoundInfo | undefined)[] = round.players.map((player, index) => {
     const playerInfo = players.find(it => it.playerId === player.playerId);
     if (playerInfo) {
       const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
@@ -270,6 +276,8 @@ const TeamRound = ({
         ...playerInfo,
         ...player,
         out,
+        isDesignatedCaptain: index === 0,
+        isDesignatedViceCaptain: index === 1,
       };
     } else {
       return undefined;

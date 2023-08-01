@@ -18,11 +18,13 @@ export type PlayerInfo =
   | undefined;
 
 export type PlayerRoundInfo = {
-  isCaptain?: boolean;
+  isCaptain?: boolean; // Is the player actually acting captain per now? (Highest ranking playing player)
   played?: boolean;
   benched?: boolean;
   points?: number;
   out?: boolean;
+  isDesignatedCaptain?: boolean; // Is the player selected as captain? (Tops the list, will be captain if she plays)
+  isDesignatedViceCaptain?: boolean; // Selected in position 2, right behind the captain
 };
 
 export type FullPlayerRoundInfo = PlayerInfo & PlayerRoundInfo;
