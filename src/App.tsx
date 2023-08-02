@@ -100,7 +100,7 @@ const countryToFlagMapping: {[key: string]: string} = {
   France: 'fr',
   Germany: 'de',
   Haiti: 'ht',
-  Ireland: 'ir',
+  Ireland: 'ie',
   Italy: 'it',
   Jamaica: 'jm',
   Japan: 'jp',
