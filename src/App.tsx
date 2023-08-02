@@ -1,6 +1,6 @@
 import players from './data/players.json';
 import league from './data/league.json';
-import {Collapse, UncontrolledTooltip} from 'reactstrap';
+import {Collapse, UncontrolledTooltip, Modal, ModalHeader, ModalBody} from 'reactstrap';
 import {useId, useState} from 'react';
 import countries from './data/countries';
 import {FullPlayerRoundInfo, PlayerInfo} from './types';
@@ -248,9 +248,11 @@ const TeamRound = ({
   slug,
   round,
   initialIsOpen,
+  ordering,
 }: {
   slug: string;
   round: (typeof teams)[0]['results']['round-1'];
+  ordering: Ordering;
   initialIsOpen?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen ?? false);
@@ -274,7 +276,9 @@ const TeamRound = ({
   const {playersPlayed, playersAvailable, teamIsComplete} = calculateTeamCompleteness(roundPlayers);
   const onFieldPlayers = teamIsComplete ? roundPlayers.filter(player => player?.played) : roundPlayers.slice(0, 11);
   const benchedPlayers = teamIsComplete ? roundPlayers.filter(player => !player?.played) : roundPlayers.slice(11);
-  onFieldPlayers.sort(orderPositions);
+  if (ordering === 'position') {
+    onFieldPlayers.sort(orderPositions);
+  }
 
   return (
     <div className="list-group-item ps-0">
@@ -306,15 +310,9 @@ const TeamRound = ({
       </div>
       <Collapse isOpen={isOpen} className="card-body">
         <div className="d-flex flex-column gap-2 pt-3">
-          {onFieldPlayers.map((playerInfo, index) =>
-            playerInfo ? (
-              <Player key={playerInfo.playerId} playerInfo={playerInfo} />
-            ) : (
-              <div key={index}>
-                <em>Player info missing</em>
-              </div>
-            )
-          )}
+          {onFieldPlayers.map((playerInfo, index) => (
+            <Player key={playerInfo?.playerId ?? index} playerInfo={playerInfo} />
+          ))}
           <div className="d-flex flex-row flex-fill">
             Bench <hr />
           </div>
@@ -333,7 +331,7 @@ const TeamRound = ({
   );
 };
 
-const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) => {
+const Team = ({team, ordering, className}: {team: (typeof teams)[0]; className?: string; ordering: Ordering}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const ranking = rankings[team.teamName];
@@ -392,7 +390,13 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
               return 0;
             })
             .map(([slug, round], index, results) => (
-              <TeamRound key={slug} slug={slug} round={round} initialIsOpen={index === results.length - 1} />
+              <TeamRound
+                key={slug}
+                slug={slug}
+                round={round}
+                ordering={ordering}
+                initialIsOpen={index === results.length - 1}
+              />
             ))}
         </div>
       </Collapse>
@@ -400,13 +404,26 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
   );
 };
 
+type Ordering = 'priority' | 'position';
+
 function App() {
   console.log('players', players);
   console.log('countries', countries);
   console.log('league', league);
 
+  const [ordering, setOrdering] = useState<Ordering>('position');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <div className="d-flex py-3 bg-light" style={{width: '100vw'}}>
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={() => setSettingsOpen(true)}
+        style={{position: 'absolute', top: 12, right: 12}}
+      >
+        <span className="fa fa-gear" />
+      </button>
       <div className="container mx-auto" style={{maxWidth: 600}}>
         <div className="mb-3 d-flex flex-row align-items-center justify-content-start">
           <img className="rounded-circle me-3" src="/leah.jpeg" style={{height: 50}} />
@@ -414,10 +431,33 @@ function App() {
         </div>
         <div className="list-group">
           {teams.map(team => (
-            <Team key={team.teamName} team={team} className="list-group-item px-0 bg-white" />
+            <Team key={team.teamName} team={team} ordering={ordering} className="list-group-item px-0 bg-white" />
           ))}
         </div>
       </div>
+      <Modal isOpen={settingsOpen} toggle={() => setSettingsOpen(false)}>
+        <ModalHeader toggle={() => setSettingsOpen(false)}>Settings</ModalHeader>
+        <ModalBody>
+          <form>
+            <div className="form-group">
+              <label htmlFor="ordering">Player ordering</label>
+              <select
+                className="form-control"
+                id="ordering"
+                value={ordering}
+                onChange={e => setOrdering(e.target.value as Ordering)}
+              >
+                <option key="priority" value="priority">
+                  By Priority
+                </option>
+                <option key="position" value="position">
+                  By Position
+                </option>
+              </select>
+            </div>
+          </form>
+        </ModalBody>
+      </Modal>
     </div>
   );
 }
