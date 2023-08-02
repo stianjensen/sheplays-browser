@@ -155,7 +155,9 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
   return (
     <div className="d-flex gap-3">
       <div
-        className={`align-self-center shadow-sm fi fis fi-${countryToFlagMapping[playerInfo.country]} rounded-circle`}
+        className={`align-self-center shadow-sm fi fis fi-${
+          countryToFlagMapping[playerInfo.country]
+        } rounded-circle flex-shrink-0`}
       />
       <PlayerPosition position={playerInfo.position} />
       <div
@@ -240,15 +242,16 @@ const TeamRound = ({
   const {playersPlayed, playersAvailable, teamIsComplete} = calculateTeamCompleteness(roundPlayers);
 
   return (
-    <div className="card">
-      <strong
-        className="card-header d-flex align-items-center"
-        onClick={() => {
-          setIsOpen(previous => !previous);
-        }}
-        style={{cursor: 'pointer'}}
-      >
-        <div>{unslugify(slug)}</div>
+    <div className="list-group-item ps-0">
+      <div className="d-flex align-items-center position-relative fw-semibold">
+        <button
+          className="btn p-0 fw-bold stretched-link tabular-nums"
+          onClick={() => {
+            setIsOpen(previous => !previous);
+          }}
+        >
+          {unslugify(slug)}
+        </button>
         <div>
           <small>
             <span className="fas fa-shirt ms-4 me-2 text-primary" />
@@ -265,9 +268,9 @@ const TeamRound = ({
         <div className="badge rounded-pill tabular-nums bg-primary-subtle text-primary-emphasis ms-auto">
           {round.score}
         </div>
-      </strong>
+      </div>
       <Collapse isOpen={isOpen} className="card-body">
-        <div className="d-flex flex-column gap-2">
+        <div className="d-flex flex-column gap-2 pt-3">
           {roundPlayers.map((playerInfo, index) =>
             playerInfo ? (
               <Player key={playerInfo.playerId} playerInfo={playerInfo} />
@@ -296,13 +299,7 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
 
   return (
     <div className={className}>
-      <div
-        className="d-flex align-items-center gap-3"
-        style={{cursor: 'pointer'}}
-        onClick={() => {
-          setIsOpen(previous => !previous);
-        }}
-      >
+      <div className="d-flex align-items-center gap-3 px-3 position-relative">
         <div className="d-flex align-items-center gap-2">
           <div className="text-center" style={{width: '1em'}}>
             {ranking.current < ranking.previous ? (
@@ -328,14 +325,21 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
           </div>
         </div>
         <h5 className="flex-fill d-flex align-items-center gap-3 mb-0">
-          <div className="flex-fill">{team.teamName}</div>
+          <button
+            className="btn btn-lg p-0 fw-medium text-start flex-fill stretched-link"
+            onClick={() => {
+              setIsOpen(previous => !previous);
+            }}
+          >
+            {team.teamName}
+          </button>
           <div className="badge rounded-pill tabular-nums bg-primary-subtle text-primary-emphasis">
             {team.score.total}
           </div>
         </h5>
       </div>
       <Collapse isOpen={isOpen}>
-        <div className="d-flex flex-column gap-3 pt-3">
+        <div className="list-group list-group-flush ps-3 pt-2">
           {Object.entries(team.results)
             .sort(([slugA, _a], [slugB, _b]) => {
               if (slugA < slugB) {
@@ -369,7 +373,7 @@ function App() {
         </div>
         <div className="list-group">
           {teams.map(team => (
-            <Team key={team.teamName} team={team} className="list-group-item" />
+            <Team key={team.teamName} team={team} className="list-group-item px-0 bg-white" />
           ))}
         </div>
       </div>
