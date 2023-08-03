@@ -5,7 +5,20 @@ import {useId, useState} from 'react';
 import countries from './data/countries';
 import {FullPlayerRoundInfo, PlayerInfo} from './types';
 
+const powerCouples = {
+  'Team Charlemagne': {teams: ['Obligatorisk Panenka', 'Nå Mjelder det! '], score: 0, color: 'lightblue'},
+  'Team Esmola': {teams: ['Everybody Hørts', 'FC Ballinsiager  🎵 👺🦩👚'], score: 0, color: '#ffcccb'},
+};
 const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
+for (const [coupleName, coupleInfo] of Object.entries(powerCouples)) {
+  for (const team of teams) {
+    if (coupleInfo.teams.includes(team.teamName)) {
+      coupleInfo.score += team.score.total;
+      team.couple = coupleName;
+    }
+  }
+}
+
 const currentRoundName = Object.keys(league.teams[0].score)
   .filter(it => it !== 'total')
   .sort()
@@ -331,7 +344,17 @@ const TeamRound = ({
   );
 };
 
-const Team = ({team, ordering, className}: {team: (typeof teams)[0]; className?: string; ordering: Ordering}) => {
+const Team = ({
+  team,
+  ordering,
+  showPowerCouples,
+  className,
+}: {
+  team: (typeof teams)[0];
+  className?: string;
+  ordering: Ordering;
+  setPowerCouples: boolean;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const ranking = rankings[team.teamName];
@@ -371,6 +394,19 @@ const Team = ({team, ordering, className}: {team: (typeof teams)[0]; className?:
             }}
           >
             {team.teamName}
+            {showPowerCouples && team.couple && (
+              <small>
+                <span
+                  id={`couple-${team.teamName}`}
+                  className="fas fa-shirt ms-2 me-1"
+                  style={{color: powerCouples[team.couple].color}}
+                />
+                <span className="text-muted">{powerCouples[team.couple].score}</span>
+                <UncontrolledTooltip target={'#' + CSS.escape(`couple-${team.teamName}`)}>
+                  {team.couple}
+                </UncontrolledTooltip>
+              </small>
+            )}
           </button>
           <div className="badge rounded-pill tabular-nums bg-primary-subtle text-primary-emphasis">
             {team.score.total}
@@ -412,6 +448,7 @@ function App() {
   console.log('league', league);
 
   const [ordering, setOrdering] = useState<Ordering>('position');
+  const [showPowerCouples, setShowPowerCouples] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
@@ -431,15 +468,21 @@ function App() {
         </div>
         <div className="list-group">
           {teams.map(team => (
-            <Team key={team.teamName} team={team} ordering={ordering} className="list-group-item px-0 bg-white" />
+            <Team
+              key={team.teamName}
+              team={team}
+              ordering={ordering}
+              showPowerCouples={showPowerCouples}
+              className="list-group-item px-0 bg-white"
+            />
           ))}
         </div>
       </div>
       <Modal isOpen={settingsOpen} toggle={() => setSettingsOpen(false)}>
         <ModalHeader toggle={() => setSettingsOpen(false)}>Settings</ModalHeader>
         <ModalBody>
-          <form>
-            <div className="form-group">
+          <form className="d-flex flex-column gap-3">
+            <div className="form-group" key="ordering">
               <label htmlFor="ordering">Player ordering</label>
               <select
                 className="form-control"
@@ -454,6 +497,18 @@ function App() {
                   By Position
                 </option>
               </select>
+            </div>
+            <div className="form-check" key="power-couples">
+              <label htmlFor="power-couples" className="form-check-label">
+                Show PowerCouple scores
+              </label>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="power-couples"
+                checked={showPowerCouples}
+                onChange={e => setShowPowerCouples(e.target.checked)}
+              />
             </div>
           </form>
         </ModalBody>
