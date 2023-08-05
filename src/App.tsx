@@ -3,6 +3,7 @@ import league from './data/league.json';
 import {Collapse, UncontrolledTooltip} from 'reactstrap';
 import {useId, useState} from 'react';
 import countries from './data/countries';
+import deadlines from './data/deadlines.json';
 import {FullPlayerRoundInfo} from './types';
 
 const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
@@ -214,6 +215,58 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
   );
 };
 
+const Lineup = ({
+  slug,
+  playerIds,
+  transfers,
+}: {
+  slug: string;
+  playerIds: (typeof teams)[0]['players']['round-1'];
+  transfers: (typeof teams)[0]['transfers']['round-1'];
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const roundPlayers: (FullPlayerRoundInfo | undefined)[] =
+    playerIds?.map(playerId => {
+      return players.find(it => it.playerId === playerId);
+    }) ?? [];
+
+  return (
+    <div className="list-group-item ps-0">
+      <div className="d-flex align-items-center position-relative fw-semibold">
+        <button
+          className="btn p-0 fw-bold stretched-link tabular-nums"
+          onClick={() => {
+            setIsOpen(previous => !previous);
+          }}
+        >
+          {unslugify(slug)}
+        </button>
+        <span className="ms-4 far fa-clock text-secondary" />
+      </div>
+      <Collapse isOpen={isOpen} className="card-body">
+        <div className="d-flex flex-column gap-2 pt-3">
+          {roundPlayers.map((playerInfo, index) =>
+            playerInfo ? (
+              <Player key={playerInfo.playerId} playerInfo={playerInfo} />
+            ) : (
+              <div key={index}>
+                <em>Player info missing</em>
+              </div>
+            )
+          )}
+          {transfers ? (
+            <div className="d-flex justify-content-end align-items-center gap-3">
+              <em>Transfers</em>
+              <div className="badge rounded-pill tabular-nums text-bg-danger">{transfers}</div>
+            </div>
+          ) : null}
+        </div>
+      </Collapse>
+    </div>
+  );
+};
+
 const TeamRound = ({
   slug,
   round,
@@ -297,6 +350,15 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
 
   const ranking = rankings[team.teamName];
 
+  let upcomingRound: string | undefined = undefined;
+  for (const roundSlug in team.players) {
+    if (!(roundSlug in team.results)) {
+      if (new Date(deadlines[roundSlug as keyof typeof deadlines]) < new Date()) {
+        upcomingRound = roundSlug;
+      }
+    }
+  }
+
   return (
     <div className={className}>
       <div className="d-flex align-items-center gap-3 px-3 position-relative">
@@ -353,6 +415,13 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
             .map(([slug, round], index, results) => (
               <TeamRound key={slug} slug={slug} round={round} initialIsOpen={index === results.length - 1} />
             ))}
+          {upcomingRound && (
+            <Lineup
+              slug={upcomingRound}
+              playerIds={team.players[upcomingRound as keyof typeof team.players]}
+              transfers={team.transfers[upcomingRound as keyof typeof team.transfers]}
+            />
+          )}
         </div>
       </Collapse>
     </div>
