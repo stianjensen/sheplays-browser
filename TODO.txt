@@ -1,0 +1,113 @@
+Make database
+- Things we likely want to save from the start
+  - Users/Teams
+    - Team name
+    - Auth
+  - Players
+    - Club (history?)
+    - Name
+    - Position
+    - Starting price
+    - Current price (history?)
+  - Player-rounds
+    - Player
+    - Round
+    - Played?
+    - Out_through_injury?
+    - Score
+      - Breakdown:
+        - Minutes played
+        - Goals
+        - Assists
+        - Saves
+        - Clean sheet
+        - Goals conceded
+        - Yellow card
+        - Red card
+        - Penalties missed
+        - Penalties saved
+        - Own goals
+        - ...bonus?
+    - Ownership percentage
+  - Rounds
+    - Games
+      - Home club
+        - Squad
+          - Started
+          - Subbed_on_at
+          - Subbed_off_at
+      - Away club
+        - Squad
+    - Team rounds
+      - Team
+      - Squad
+        - Player
+        - Started
+        - Subbed_on
+        - Captain?
+        - Vice Captain?
+      - Transfers
+        - Player in
+        - Player out
+        - Cost
+  - Minileague
+    - Name
+  - Minileague-membership
+    - User
+    - League
+    - is_admin
+    - joined_at
+- Things we can live-calculate at first?
+  - Deadline per round
+  - Current cummulative standings
+  - Standings per round
+  - Cummulative standings per round
+  - Standing-change per round
+  - Form per player (avg score last x rounds)
+
+Fill database with player and fixture info
+  - Refresh daily
+
+Fill database with live game/player info
+  - Refresh every few minutes during games
+
+Fill database with scores
+  - Refresh every few minutes, based on game info
+
+Create interface to sign up and select team name
+
+Create list based interface to select your squad
+  - See remaining budget
+  - List of players with stats and price
+    - See stats by type or by round?
+  - Disable and visibly show that already-selected players are already selected
+  - See available spots per position and existing players
+  - If you select a player in a position that is full, allow selecting who should be replaced
+
+Create list based interface to manage your team
+  - Select starters
+  - Select captain and vice captain
+
+Create list based interface to make transfers
+  - If your team is full, allow clicking on who should be replaced
+    - Disable other positions
+
+Create graphical interfaces for squad selection, transfers and team management
+  - Click on a position to fill it or select a replacement
+  - Click on a position to select as captain
+  - Click on a position to substitute it to another position (on/off bench)
+
+Create interface to create and view minileagues
+
+Create interface to join mini-league
+  - Support join-links/deep-links
+
+Create interface to view a single minileague (vmesupert.com!)
+  - Team names
+  - Current cummulative standing
+  - Current round standings
+
+Create interface to view single minileague history
+
+Create stats center? (Separate from player picker? Maybe no point?)
+Allow export of stats to excel
