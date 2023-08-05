@@ -418,7 +418,7 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
           {upcomingRound && (
             <Lineup
               slug={upcomingRound}
-              playerIds={team.players[upcomingRound as keyof typeof team.players]}
+              playerIds={team.players[upcomingRound as keyof typeof team.players]?.slice(0, 15)}
               transfers={team.transfers[upcomingRound as keyof typeof team.transfers]}
             />
           )}
