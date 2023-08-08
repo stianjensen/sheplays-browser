@@ -8,7 +8,6 @@ export type PlayerInfo =
       country: string;
       name: string;
       injured?: boolean | null;
-      number?: number | null;
       points: number;
       DOB: string;
       clubD?: string | null;
