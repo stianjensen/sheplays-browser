@@ -8,6 +8,13 @@ function calculatePlayerTotalScore(scores: (typeof players)[0]['score']): number
   return scores ? Object.values(scores).reduce((a, b) => a + b, 0) : 0;
 }
 
+function padPriceWithZeroes(raw: string): number {
+  if (raw[0] === '1') {
+    return Number(raw.padEnd(7, '0'));
+  }
+  return Number(raw.padEnd(6, '0'));
+}
+
 export const Stats = () => {
   const [countryFilter, setCountryFilter] = useState('');
   const [positionFilter, setPositionFilter] = useState('');
@@ -48,8 +55,14 @@ export const Stats = () => {
         return false;
       }
 
-      if (priceFilter && !player.fantasyPrice.toString().startsWith(priceFilter)) {
-        return false;
+      if (priceFilter) {
+        if (priceFilter[0] === '>') {
+          return Number(player.fantasyPrice) >= padPriceWithZeroes(priceFilter.slice(1));
+        } else if (priceFilter[0] === '<') {
+          return Number(player.fantasyPrice) <= padPriceWithZeroes(priceFilter.slice(1));
+        } else if (!player.fantasyPrice.toString().startsWith(priceFilter)) {
+          return false;
+        }
       }
 
       if (totalPointsMinimumFilter && calculatePlayerTotalScore(player.score) < Number(totalPointsMinimumFilter)) {
@@ -158,6 +171,7 @@ export const Stats = () => {
                   <div>Price</div>
                   <input
                     type="text"
+                    placeholder="Prices starting with..."
                     className="form-control form-control-sm"
                     size={5}
                     value={priceFilter}
