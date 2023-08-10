@@ -5,6 +5,7 @@ import {useId, useState} from 'react';
 import countries from './data/countries';
 import deadlines from './data/deadlines.json';
 import {FullPlayerRoundInfo} from './types';
+import {createBrowserRouter, createRoutesFromElements, Link, Route, RouterProvider} from 'react-router-dom';
 
 const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
 const currentRoundName = Object.keys(league.teams[0].score)
@@ -123,6 +124,14 @@ const countryToFlagMapping: {[key: string]: string} = {
   Zambia: 'zm',
 };
 
+const Country = ({country}: {country: string}) => {
+  return (
+    <div
+      className={`align-self-center shadow-sm fi fis fi-${countryToFlagMapping[country]} rounded-circle flex-shrink-0`}
+    />
+  );
+};
+
 const PlayerPosition = ({position}: {position: string}) => {
   let color: string;
   switch (position) {
@@ -155,11 +164,7 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
 
   return (
     <div className="d-flex gap-3">
-      <div
-        className={`align-self-center shadow-sm fi fis fi-${
-          countryToFlagMapping[playerInfo.country]
-        } rounded-circle flex-shrink-0`}
-      />
+      <Country country={playerInfo.country} />
       <PlayerPosition position={playerInfo.position} />
       <div
         className={`d-flex align-items-baseline ${
@@ -428,24 +433,204 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
   );
 };
 
+const League = () => {
+  return (
+    <div className="container mx-auto" style={{maxWidth: 600}}>
+      <div className="mb-3 d-flex flex-row align-items-center justify-content-start">
+        <img className="rounded-circle me-3" src="/leah.jpeg" style={{height: 50}} />
+        <h1 className="mb-0">Leah Williamson minneliga</h1>
+      </div>
+      <div className="mb-3">
+        <Link to="/stats">Player stats</Link>
+      </div>
+      <div className="list-group">
+        {teams.map(team => (
+          <Team key={team.teamName} team={team} className="list-group-item px-0 bg-white" />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const Stats = () => {
+  const [countryFilter, setCountryFilter] = useState('');
+  const [positionFilter, setPositionFilter] = useState('');
+  const [nameFilter, setNameFilter] = useState('');
+  const [priceFilter, setPriceFilter] = useState('');
+
+  const filteredPlayers = players
+    .filter(player => {
+      if (countryFilter && player.country !== countryFilter) {
+        return false;
+      }
+
+      if (positionFilter && player.position !== positionFilter) {
+        return false;
+      }
+
+      if (nameFilter && !player.name.toLowerCase().includes(nameFilter.toLowerCase())) {
+        return false;
+      }
+
+      if (priceFilter && !player.fantasyPrice.toString().startsWith(priceFilter)) {
+        return false;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      if (a.country < b.country) {
+        return -1;
+      }
+      if (a.country > b.country) {
+        return 1;
+      }
+      if (a.position < b.position) {
+        return -1;
+      }
+      if (a.position > b.position) {
+        return 1;
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+  const rounds = [1, 2, 3, 4];
+
+  return (
+    <div className="container mx-auto">
+      <div className="d-flex gap-3 mb-3 align-items-baseline">
+        <h1 className="mb-0">Stats</h1>
+        <Link to="/">Back to league</Link>
+      </div>
+      <div className="card table-responsive">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>
+                <div className="d-flex flex-column align-items-center">
+                  <div>Country</div>
+                  <select
+                    className="form-select form-select-sm"
+                    value={countryFilter}
+                    onChange={e => {
+                      setCountryFilter(e.target.value);
+                    }}
+                  >
+                    <option value="">---</option>
+                    {Object.keys(countryToFlagMapping).map(country => (
+                      <option>{country}</option>
+                    ))}
+                  </select>
+                </div>
+              </th>
+              <th>
+                <div className="d-flex flex-column align-items-center">
+                  <div>Position</div>
+                  <select
+                    className="form-select form-select-sm"
+                    value={positionFilter}
+                    onChange={e => {
+                      setPositionFilter(e.target.value);
+                    }}
+                  >
+                    <option value="">---</option>
+                    <option>GK</option>
+                    <option>DF</option>
+                    <option>MF</option>
+                    <option>FW</option>
+                  </select>
+                </div>
+              </th>
+              <th>
+                <div className="d-flex flex-column align-items-center">
+                  <div>Name</div>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    size={5}
+                    value={nameFilter}
+                    onChange={e => {
+                      setNameFilter(e.target.value);
+                    }}
+                  />
+                </div>
+              </th>
+              <th>
+                <div className="d-flex flex-column align-items-center">
+                  <div>Price</div>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    size={5}
+                    value={priceFilter}
+                    onChange={e => {
+                      setPriceFilter(e.target.value);
+                    }}
+                  />
+                </div>
+              </th>
+              {rounds.map(round => (
+                <th key={round} {...{valign: 'top'}} className="text-end">
+                  R{round}
+                </th>
+              ))}
+              <th {...{valign: 'top'}} className="text-end">
+                Total
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPlayers.map(player => {
+              const playerTotalScore = player.score ? Object.values(player.score).reduce((a, b) => a + b, 0) : 0;
+              return (
+                <tr key={player.playerId}>
+                  <td>
+                    <Country country={player.country} />
+                  </td>
+                  <td>
+                    <PlayerPosition position={player.position} />
+                  </td>
+                  <td>{player.name}</td>
+                  <td>
+                    {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                      minimumFractionDigits: 0,
+                    }).format(player.fantasyPrice)}
+                  </td>
+                  {rounds.map(round => (
+                    <td key={round} className="tabular-nums text-end">
+                      {player.score?.[`round-${round}` as keyof typeof player.score] ?? 0}
+                    </td>
+                  ))}
+                  <td className="tabular-nums text-end">{playerTotalScore}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   console.log('players', players);
   console.log('countries', countries);
   console.log('league', league);
 
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <>
+        <Route path="/" element={<League />} />
+        <Route path="stats" element={<Stats />} />
+      </>
+    )
+  );
+
   return (
     <div className="d-flex py-3 bg-light" style={{width: '100vw'}}>
-      <div className="container mx-auto" style={{maxWidth: 600}}>
-        <div className="mb-3 d-flex flex-row align-items-center justify-content-start">
-          <img className="rounded-circle me-3" src="/leah.jpeg" style={{height: 50}} />
-          <h1 className="mb-0">Leah Williamson minneliga</h1>
-        </div>
-        <div className="list-group">
-          {teams.map(team => (
-            <Team key={team.teamName} team={team} className="list-group-item px-0 bg-white" />
-          ))}
-        </div>
-      </div>
+      <RouterProvider router={router} />
     </div>
   );
 }
