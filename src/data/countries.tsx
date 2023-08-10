@@ -101,3 +101,38 @@ for (const player of players) {
 }
 
 export default countries;
+
+export const countryToFlagMapping: {[key: string]: string} = {
+  Australia: 'au',
+  Argentina: 'ar',
+  Brazil: 'br',
+  Canada: 'ca',
+  Colombia: 'co',
+  'Costa Rica': 'cr',
+  China: 'cn',
+  Denmark: 'dk',
+  England: 'gb-eng',
+  France: 'fr',
+  Germany: 'de',
+  Haiti: 'ht',
+  Ireland: 'ie',
+  Italy: 'it',
+  Jamaica: 'jm',
+  Japan: 'jp',
+  Morocco: 'ma',
+  Netherlands: 'nl',
+  'New Zealand': 'nz',
+  Norway: 'no',
+  Nigeria: 'ng',
+  Panama: 'pa',
+  Philippines: 'ph',
+  Portugal: 'pt',
+  Spain: 'es',
+  'South Africa': 'za',
+  'South Korea': 'kr',
+  Sweden: 'se',
+  Switzerland: 'ch',
+  USA: 'us',
+  Vietnam: 'vn',
+  Zambia: 'zm',
+};
