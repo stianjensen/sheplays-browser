@@ -86,7 +86,7 @@ export const Stats = () => {
             <label htmlFor={id + 'show-only-remaining-countries'}>Show only remaining countries</label>
           </div>
         </div>
-        <table className="table">
+        <table className="table table-striped mb-0 no-border-bottom">
           <thead>
             <tr>
               <th>
@@ -181,14 +181,27 @@ export const Stats = () => {
           <tbody>
             {filteredPlayers.map(player => {
               return (
-                <tr key={player.playerId}>
+                <tr key={player.playerId} className={player.injured ? 'table-danger' : ''}>
                   <td className="text-center">
                     <Country country={player.country} />
                   </td>
                   <td className="text-center">
                     <PlayerPosition position={player.position} />
                   </td>
-                  <td>{player.name}</td>
+                  <td>
+                    <div className="d-flex align-items-baseline gap-2">
+                      <div>{player.name}</div>
+                      <small>
+                        <a
+                          href={`https://fbref.com/search/search.fcgi?search=${player.name}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          FBref
+                        </a>
+                      </small>
+                    </div>
+                  </td>
                   <td className="text-end tabular-nums">
                     {new Intl.NumberFormat('en-US', {
                       style: 'currency',

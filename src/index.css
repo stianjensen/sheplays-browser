@@ -1,3 +1,7 @@
 .tabular-nums {
   font-variant: tabular-nums;
 }
+
+.table.no-border-bottom tr:last-child td {
+  border-bottom-width: 0;
+}
