@@ -17,9 +17,22 @@ export const Stats = () => {
 
   const [showOnlyRemainingCountries, setShowOnlyRemainingCountries] = useState(true);
 
+  const rounds: string[] = [];
+  for (const player of players) {
+    for (const round in player.score) {
+      if (!rounds.includes(round)) {
+        rounds.push(round);
+      }
+    }
+  }
+
+  rounds.sort();
+
+  const nextRound = 'round-' + ((Number(rounds.at(-1)?.at(-1)) ?? 1) + 1);
+
   const filteredPlayers = players
     .filter(player => {
-      if (showOnlyRemainingCountries && !countryRemaining(player.country, 'round-5')) {
+      if (showOnlyRemainingCountries && !countryRemaining(player.country, nextRound)) {
         return false;
       }
 
@@ -61,8 +74,6 @@ export const Stats = () => {
       return a.name.localeCompare(b.name);
     });
 
-  const rounds = [1, 2, 3, 4];
-
   const id = useId();
 
   return (
@@ -102,7 +113,7 @@ export const Stats = () => {
                   >
                     <option value="">---</option>
                     {Object.keys(countryToFlagMapping)
-                      .filter(country => !showOnlyRemainingCountries || countryRemaining(country, 'round-5'))
+                      .filter(country => !showOnlyRemainingCountries || countryRemaining(country, nextRound))
                       .map(country => (
                         <option>{country}</option>
                       ))}
@@ -158,7 +169,7 @@ export const Stats = () => {
               </th>
               {rounds.map(round => (
                 <th key={round} {...{valign: 'top'}} className="text-end">
-                  R{round}
+                  R{round.at(-1)}
                 </th>
               ))}
               <th>
@@ -211,7 +222,7 @@ export const Stats = () => {
                   </td>
                   {rounds.map(round => (
                     <td key={round} className="tabular-nums text-end">
-                      {player.score?.[`round-${round}` as keyof typeof player.score] ?? 0}
+                      {player.score?.[round as keyof typeof player.score] ?? 0}
                     </td>
                   ))}
                   <td className="tabular-nums fw-semibold text-end">{calculatePlayerTotalScore(player.score)}</td>
