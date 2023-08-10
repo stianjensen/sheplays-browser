@@ -22,6 +22,7 @@ export type PlayerRoundInfo = {
   played?: boolean;
   benched?: boolean;
   points?: number;
+  out?: boolean;
 };
 
 export type FullPlayerRoundInfo = PlayerInfo & PlayerRoundInfo;

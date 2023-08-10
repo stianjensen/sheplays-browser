@@ -65,10 +65,10 @@ function calculateTeamCompleteness(roundPlayers: (FullPlayerRoundInfo | undefine
   teamIsComplete: boolean;
 } {
   const playersPlayed = roundPlayers.filter(player => player?.played).length;
-  const playersAvailable = Math.min(11, roundPlayers.length - roundPlayers.filter(player => player?.benched).length);
+  const playersAvailable = Math.min(11, roundPlayers.length - roundPlayers.filter(player => player?.out).length);
 
   const firstPendingPlayerIndex = roundPlayers.findIndex(
-    player => !(player?.played || player?.benched || player?.injured)
+    player => !(player?.played || player?.out || player?.injured || !countries)
   );
   const lastPlayedPlayerIndex = roundPlayers.findLastIndex(player => player?.played);
 
@@ -165,7 +165,7 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
         className={`d-flex align-items-baseline ${
           playerInfo.played
             ? ''
-            : playerInfo.benched || playerInfo.injured
+            : playerInfo.out || playerInfo.injured
             ? 'text-decoration-line-through text-secondary'
             : 'text-secondary'
         }`}
@@ -178,11 +178,11 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
             minimumFractionDigits: 0,
           }).format(playerInfo.fantasyPrice)}
         </UncontrolledTooltip>
-        {!playerInfo.played && !playerInfo.benched && !playerInfo.injured && (
+        {!playerInfo.played && !playerInfo.out && !playerInfo.injured && (
           <small>
             <span
               className="ms-2 far fa-clock"
-              title="The player will receive points once their team has played – as long as they are not benched."
+              title="The player will receive points once their team has played – as long as they are not out."
             />
           </small>
         )}
@@ -282,11 +282,11 @@ const TeamRound = ({
     const playerInfo = players.find(it => it.playerId === player.playerId);
     if (playerInfo) {
       const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
-      const benched = countryPlayed && !player.played;
+      const out = !countries[playerInfo.club][slug]?.remaining || (countryPlayed && !player.played);
       return {
         ...playerInfo,
         ...player,
-        benched,
+        out,
       };
     } else {
       return undefined;
