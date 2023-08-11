@@ -21,7 +21,7 @@ export function countryRemaining(country: string, round: string): boolean {
       'Norway',
       'Morocco',
       'Switzerland',
-      'South-Africa',
+      'South Africa',
       'Denmark',
     ];
     return remainingCountries.includes(country);
