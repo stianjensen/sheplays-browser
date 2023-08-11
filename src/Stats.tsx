@@ -8,6 +8,13 @@ function calculatePlayerTotalScore(scores: (typeof players)[0]['score']): number
   return scores ? Object.values(scores).reduce((a, b) => a + b, 0) : 0;
 }
 
+function padPriceWithZeroes(raw: string): number {
+  if (raw[0] === '1') {
+    return Number(raw.padEnd(7, '0'));
+  }
+  return Number(raw.padEnd(6, '0'));
+}
+
 export const Stats = () => {
   const [countryFilter, setCountryFilter] = useState('');
   const [positionFilter, setPositionFilter] = useState('');
@@ -17,9 +24,22 @@ export const Stats = () => {
 
   const [showOnlyRemainingCountries, setShowOnlyRemainingCountries] = useState(true);
 
+  const rounds: string[] = [];
+  for (const player of players) {
+    for (const round in player.score) {
+      if (!rounds.includes(round)) {
+        rounds.push(round);
+      }
+    }
+  }
+
+  rounds.sort();
+
+  const nextRound = 'round-' + ((Number(rounds.at(-1)?.at(-1)) ?? 1) + 1);
+
   const filteredPlayers = players
     .filter(player => {
-      if (showOnlyRemainingCountries && !countryRemaining(player.country, 'round-5')) {
+      if (showOnlyRemainingCountries && !countryRemaining(player.country, nextRound)) {
         return false;
       }
 
@@ -35,8 +55,14 @@ export const Stats = () => {
         return false;
       }
 
-      if (priceFilter && !player.fantasyPrice.toString().startsWith(priceFilter)) {
-        return false;
+      if (priceFilter) {
+        if (priceFilter[0] === '>') {
+          return Number(player.fantasyPrice) >= padPriceWithZeroes(priceFilter.slice(1));
+        } else if (priceFilter[0] === '<') {
+          return Number(player.fantasyPrice) <= padPriceWithZeroes(priceFilter.slice(1));
+        } else if (!player.fantasyPrice.toString().startsWith(priceFilter)) {
+          return false;
+        }
       }
 
       if (totalPointsMinimumFilter && calculatePlayerTotalScore(player.score) < Number(totalPointsMinimumFilter)) {
@@ -61,8 +87,6 @@ export const Stats = () => {
       return a.name.localeCompare(b.name);
     });
 
-  const rounds = [1, 2, 3, 4];
-
   const id = useId();
 
   return (
@@ -86,7 +110,7 @@ export const Stats = () => {
             <label htmlFor={id + 'show-only-remaining-countries'}>Show only remaining countries</label>
           </div>
         </div>
-        <table className="table">
+        <table className="table table-striped mb-0 no-border-bottom">
           <thead>
             <tr>
               <th>
@@ -102,7 +126,7 @@ export const Stats = () => {
                   >
                     <option value="">---</option>
                     {Object.keys(countryToFlagMapping)
-                      .filter(country => !showOnlyRemainingCountries || countryRemaining(country, 'round-5'))
+                      .filter(country => !showOnlyRemainingCountries || countryRemaining(country, nextRound))
                       .map(country => (
                         <option>{country}</option>
                       ))}
@@ -147,6 +171,7 @@ export const Stats = () => {
                   <div>Price</div>
                   <input
                     type="text"
+                    placeholder="Prices starting with..."
                     className="form-control form-control-sm"
                     size={5}
                     value={priceFilter}
@@ -158,7 +183,7 @@ export const Stats = () => {
               </th>
               {rounds.map(round => (
                 <th key={round} {...{valign: 'top'}} className="text-end">
-                  R{round}
+                  R{round.at(-1)}
                 </th>
               ))}
               <th>
@@ -181,14 +206,27 @@ export const Stats = () => {
           <tbody>
             {filteredPlayers.map(player => {
               return (
-                <tr key={player.playerId}>
+                <tr key={player.playerId} className={player.injured ? 'table-danger' : ''}>
                   <td className="text-center">
                     <Country country={player.country} />
                   </td>
                   <td className="text-center">
                     <PlayerPosition position={player.position} />
                   </td>
-                  <td>{player.name}</td>
+                  <td>
+                    <div className="d-flex align-items-baseline gap-2">
+                      <div>{player.name}</div>
+                      <small>
+                        <a
+                          href={`https://fbref.com/search/search.fcgi?search=${player.name}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          FBref
+                        </a>
+                      </small>
+                    </div>
+                  </td>
                   <td className="text-end tabular-nums">
                     {new Intl.NumberFormat('en-US', {
                       style: 'currency',
@@ -198,7 +236,7 @@ export const Stats = () => {
                   </td>
                   {rounds.map(round => (
                     <td key={round} className="tabular-nums text-end">
-                      {player.score?.[`round-${round}` as keyof typeof player.score] ?? 0}
+                      {player.score?.[round as keyof typeof player.score] ?? 0}
                     </td>
                   ))}
                   <td className="tabular-nums fw-semibold text-end">{calculatePlayerTotalScore(player.score)}</td>

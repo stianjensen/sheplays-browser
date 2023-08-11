@@ -433,7 +433,7 @@ function App() {
   );
 
   return (
-    <div className="d-flex py-3 bg-light" style={{width: '100vw'}}>
+    <div className="d-flex py-3 bg-light" style={{minHeight: '100vh'}}>
       <RouterProvider router={router} />
     </div>
   );
