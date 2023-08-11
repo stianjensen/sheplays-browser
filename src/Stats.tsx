@@ -56,11 +56,11 @@ export const Stats = () => {
       }
 
       if (priceFilter) {
-        if (priceFilter[0] === '>') {
-          return Number(player.fantasyPrice) >= padPriceWithZeroes(priceFilter.slice(1));
-        } else if (priceFilter[0] === '<') {
-          return Number(player.fantasyPrice) <= padPriceWithZeroes(priceFilter.slice(1));
-        } else if (!player.fantasyPrice.toString().startsWith(priceFilter)) {
+        if (priceFilter[0] === '>' && Number(player.fantasyPrice) < padPriceWithZeroes(priceFilter.slice(1))) {
+          return false;
+        } else if (priceFilter[0] === '<' && Number(player.fantasyPrice) > padPriceWithZeroes(priceFilter.slice(1))) {
+          return false;
+        } else if (!isNaN(Number(priceFilter)) && !player.fantasyPrice.toString().startsWith(priceFilter)) {
           return false;
         }
       }
