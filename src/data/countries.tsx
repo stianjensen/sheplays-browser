@@ -40,29 +40,11 @@ export function countryRemaining(country: string, round: string): boolean {
     return remainingCountries.includes(country);
   }
   if (round === 'round-6') {
-    const remainingCountries = [
-      'Spain',
-      'Netherlands',
-      'England',
-      'Sweden',
-      'Japan',
-      'Australia',
-      'Colombia',
-      'France',
-    ];
+    const remainingCountries = ['Spain', 'England', 'Sweden', 'Australia', 'Colombia', 'France'];
     return remainingCountries.includes(country);
   }
   if (round === 'round-7') {
-    const remainingCountries = [
-      'Spain',
-      'Netherlands',
-      'England',
-      'Sweden',
-      'Japan',
-      'Australia',
-      'Colombia',
-      'France',
-    ];
+    const remainingCountries = ['Spain', 'England', 'Sweden', 'Australia', 'Colombia', 'France'];
     return remainingCountries.includes(country);
   }
   return false;
