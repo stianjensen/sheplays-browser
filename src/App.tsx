@@ -279,18 +279,18 @@ const TeamRound = ({
 
   return (
     <div className={`list-group-item ps-0 ${className ?? ''}`}>
-      <div className="d-flex align-items-center position-relative fw-semibold">
+      <div className="d-flex align-items-center gap-3 position-relative fw-semibold">
         <button
-          className="btn p-0 fw-bold stretched-link tabular-nums"
+          className="btn p-0 fw-bold stretched-link tabular-nums text-start"
           onClick={() => {
             setIsOpen(previous => !previous);
           }}
         >
           {title}
         </button>
-        <div>
+        <div className="d-flex" style={{whiteSpace: 'nowrap'}}>
           <small>
-            <span className="fas fa-shirt ms-4 me-2 text-primary" />
+            <span className="fas fa-shirt ms-2 me-2 text-primary" />
             <span className="tabular-nums">{playersPlayed}</span>
             {playersPlayed === 11 && !teamIsComplete && (
               <span title="Team has starters that haven't played yet. Current score includes points from players on the bench">
@@ -444,7 +444,7 @@ const League = () => {
           <span className="fas fa-chevron-right ms-3" />
         </Link>
       </div>
-      <div className="d-flex gap-2 mb-3">
+      <div className="d-flex gap-2 mb-3" style={{overflowX: 'auto', whiteSpace: 'nowrap'}}>
         <Link
           className={`btn btn-sm ${!selectedRoundSlug ? 'btn-secondary' : 'btn-outline-secondary'} rounded-pill`}
           to="/"
