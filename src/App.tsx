@@ -596,7 +596,7 @@ function App() {
             <div className="form-group">
               <label htmlFor="ordering">Player ordering</label>
               <select
-                className="form-control"
+                className="form-select"
                 id="ordering"
                 value={ordering}
                 onChange={e => setOrdering(e.target.value as PlayerOrdering)}
