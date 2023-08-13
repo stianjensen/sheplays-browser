@@ -269,9 +269,10 @@ const FutureLineup = ({
     playerIds?.map((player, index) => {
       const playerInfo = players.find(it => it.playerId === player);
       if (playerInfo) {
-        const out = !countries[playerInfo.club][slug]?.remaining || playerInfo.injured;
+        const out = !countries[playerInfo.club][slug]?.remaining || (playerInfo.injured ?? undefined);
         return {
-          ...(playerInfo as PlayerInfo),
+          ...playerInfo,
+          position: playerInfo.position as Position,
           out,
           isDesignatedCaptain: index === 0,
           isDesignatedViceCaptain: index === 1,
@@ -328,8 +329,9 @@ const TeamRound = ({
       const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
       const out = !countries[playerInfo.club][slug]?.remaining || (countryPlayed && !player.played);
       return {
-        ...(playerInfo as PlayerInfo),
+        ...playerInfo,
         ...player,
+        position: playerInfo.position as Position,
         out,
         isDesignatedCaptain: index === 0,
         isDesignatedViceCaptain: index === 1,
