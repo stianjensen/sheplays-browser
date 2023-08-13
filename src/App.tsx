@@ -498,7 +498,7 @@ const League = () => {
           <span className="fas fa-chevron-right ms-3" />
         </Link>
       </div>
-      <div className="d-flex gap-2 mb-3" style={{overflowX: 'auto', whiteSpace: 'nowrap'}}>
+      <div className="d-flex gap-2 pb-2 mb-2" style={{overflowX: 'auto', whiteSpace: 'nowrap'}}>
         <Link
           className={`btn btn-sm ${!selectedRoundSlug ? 'btn-secondary' : 'btn-outline-secondary'} rounded-pill`}
           to="/"
