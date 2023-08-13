@@ -1,7 +1,7 @@
 import players from './data/players.json';
 import league from './data/league.json';
 import {Collapse, UncontrolledTooltip, Modal, ModalHeader, ModalBody} from 'reactstrap';
-import {useId, useState} from 'react';
+import {createContext, useContext, useId, useState} from 'react';
 import countries, {countryToFlagMapping} from './data/countries';
 import deadlines from './data/deadlines.json';
 import {FullPlayerRoundInfo, PlayerInfo} from './types';
@@ -275,22 +275,24 @@ const Lineup = ({
   );
 };
 
+type PlayerOrdering = 'priority' | 'position';
+const PlayerOrderingContext = createContext<PlayerOrdering>('position');
+
 const TeamRound = ({
   slug,
   round,
   initialIsOpen,
   title,
   className,
-  ordering,
 }: {
   slug: string;
   round: (typeof teams)[0]['results']['round-1'];
-  ordering: Ordering;
   initialIsOpen?: boolean;
   title: string;
   className?: string;
 }) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen ?? false);
+  const ordering = useContext(PlayerOrderingContext);
 
   const roundPlayers: (FullPlayerRoundInfo | undefined)[] = round.players.map((player, index) => {
     const playerInfo = players.find(it => it.playerId === player.playerId);
@@ -366,7 +368,7 @@ const TeamRound = ({
   );
 };
 
-const Team = ({team, ordering, className}: {team: (typeof teams)[0]; className?: string; ordering: Ordering}) => {
+const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const ranking = rankings[team.teamName];
@@ -439,7 +441,6 @@ const Team = ({team, ordering, className}: {team: (typeof teams)[0]; className?:
                 title={unslugify(slug)}
                 slug={slug}
                 round={round}
-                ordering={ordering}
                 initialIsOpen={index === results.length - 1}
               />
             ))}
@@ -536,17 +537,25 @@ const LeagueRound = () => {
     </div>
   );
 };
-type Ordering = 'priority' | 'position';
 
 function App() {
   console.log('players', players);
   console.log('countries', countries);
   console.log('league', league);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [ordering, setOrdering] = useState<PlayerOrdering>('position');
 
   const router = createHashRouter(
     createRoutesFromElements(
       <>
-        <Route path="/" element={<League />}>
+        <Route
+          path="/"
+          element={
+            <PlayerOrderingContext.Provider value={ordering}>
+              <League />
+            </PlayerOrderingContext.Provider>
+          }
+        >
           <Route index element={<AllRounds />} />
           <Route path="/rounds/:roundSlug" element={<LeagueRound />} />
         </Route>
@@ -554,8 +563,6 @@ function App() {
       </>
     )
   );
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [ordering, setOrdering] = useState<Ordering>('position');
 
   return (
     <div className="d-flex py-3 bg-light" style={{minHeight: '100vh'}}>
@@ -578,7 +585,7 @@ function App() {
                 className="form-control"
                 id="ordering"
                 value={ordering}
-                onChange={e => setOrdering(e.target.value as Ordering)}
+                onChange={e => setOrdering(e.target.value as PlayerOrdering)}
               >
                 <option key="priority" value="priority">
                   By Priority
