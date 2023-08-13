@@ -5,7 +5,15 @@ import {useId, useState} from 'react';
 import countries, {countryToFlagMapping} from './data/countries';
 import deadlines from './data/deadlines.json';
 import {FullPlayerRoundInfo} from './types';
-import {createBrowserRouter, createRoutesFromElements, Link, Route, RouterProvider} from 'react-router-dom';
+import {
+  createHashRouter,
+  createRoutesFromElements,
+  Link,
+  Outlet,
+  Route,
+  RouterProvider,
+  useParams,
+} from 'react-router-dom';
 import {Stats} from './Stats';
 
 const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
@@ -242,10 +250,14 @@ const TeamRound = ({
   slug,
   round,
   initialIsOpen,
+  title,
+  className,
 }: {
   slug: string;
   round: (typeof teams)[0]['results']['round-1'];
   initialIsOpen?: boolean;
+  title: string;
+  className?: string;
 }) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen ?? false);
 
@@ -266,7 +278,7 @@ const TeamRound = ({
   const {playersPlayed, playersAvailable, teamIsComplete} = calculateTeamCompleteness(roundPlayers);
 
   return (
-    <div className="list-group-item ps-0">
+    <div className={`list-group-item ps-0 ${className ?? ''}`}>
       <div className="d-flex align-items-center position-relative fw-semibold">
         <button
           className="btn p-0 fw-bold stretched-link tabular-nums"
@@ -274,7 +286,7 @@ const TeamRound = ({
             setIsOpen(previous => !previous);
           }}
         >
-          {unslugify(slug)}
+          {title}
         </button>
         <div>
           <small>
@@ -384,7 +396,13 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
               return 0;
             })
             .map(([slug, round], index, results) => (
-              <TeamRound key={slug} slug={slug} round={round} initialIsOpen={index === results.length - 1} />
+              <TeamRound
+                key={slug}
+                title={unslugify(slug)}
+                slug={slug}
+                round={round}
+                initialIsOpen={index === results.length - 1}
+              />
             ))}
           {upcomingRound && (
             <Lineup
@@ -400,6 +418,19 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
 };
 
 const League = () => {
+  const rounds: string[] = [];
+  for (const player of players) {
+    for (const round in player.score) {
+      if (!rounds.includes(round)) {
+        rounds.push(round);
+      }
+    }
+  }
+
+  rounds.sort();
+
+  const {roundSlug: selectedRoundSlug} = useParams<{roundSlug: string}>();
+
   return (
     <div className="container mx-auto" style={{maxWidth: 600}}>
       <div className="mb-3 d-flex flex-row align-items-center justify-content-start">
@@ -407,13 +438,62 @@ const League = () => {
         <h1 className="mb-0">Leah Williamson minneliga</h1>
       </div>
       <div className="mb-3">
-        <Link to="/stats">Player stats</Link>
+        <Link className="btn btn-outline-secondary" to="/stats">
+          <span className="fas fa-table me-3" />
+          Player stats
+          <span className="fas fa-chevron-right ms-3" />
+        </Link>
       </div>
-      <div className="list-group">
-        {teams.map(team => (
-          <Team key={team.teamName} team={team} className="list-group-item px-0 bg-white" />
+      <div className="d-flex gap-2 mb-3">
+        <Link
+          className={`btn btn-sm ${!selectedRoundSlug ? 'btn-secondary' : 'btn-outline-secondary'} rounded-pill`}
+          to="/"
+        >
+          All rounds
+        </Link>
+        {rounds.map(roundSlug => (
+          <Link
+            key={roundSlug}
+            className={`btn btn-sm ${
+              selectedRoundSlug === roundSlug ? 'btn-secondary' : 'btn-outline-secondary'
+            } rounded-pill`}
+            to={`/rounds/${roundSlug}`}
+          >
+            {unslugify(roundSlug)}
+          </Link>
         ))}
       </div>
+      <div>
+        <Outlet />
+      </div>
+    </div>
+  );
+};
+
+const AllRounds = () => {
+  return (
+    <div className="list-group">
+      {teams.map(team => (
+        <Team key={team.teamName} team={team} className="list-group-item px-0 bg-white" />
+      ))}
+    </div>
+  );
+};
+
+const LeagueRound = () => {
+  const {roundSlug} = useParams<{roundSlug: string}>();
+
+  const roundResults = teams
+    .map(team => ({teamName: team.teamName, results: team.results[roundSlug as keyof typeof team.results]}))
+    .sort((a, b) => {
+      return b.results.score - a.results.score;
+    });
+
+  return (
+    <div className="list-group">
+      {roundResults.map(({teamName, results}) => (
+        <TeamRound key={teamName} title={teamName} className="ps-3" slug={roundSlug!} round={results} />
+      ))}
     </div>
   );
 };
@@ -423,10 +503,13 @@ function App() {
   console.log('countries', countries);
   console.log('league', league);
 
-  const router = createBrowserRouter(
+  const router = createHashRouter(
     createRoutesFromElements(
       <>
-        <Route path="/" element={<League />} />
+        <Route path="/" element={<League />}>
+          <Route index element={<AllRounds />} />
+          <Route path="/rounds/:roundSlug" element={<LeagueRound />} />
+        </Route>
         <Route path="stats" element={<Stats />} />
       </>
     )
