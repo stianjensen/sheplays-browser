@@ -3,6 +3,7 @@ import players from './data/players.json';
 import {Link} from 'react-router-dom';
 import {countryRemaining, countryToFlagMapping} from './data/countries';
 import {Country, PlayerPosition} from './App';
+import {Position} from './types';
 
 function calculatePlayerTotalScore(scores: (typeof players)[0]['score']): number {
   return scores ? Object.values(scores).reduce((a, b) => a + b, 0) : 0;
@@ -211,7 +212,7 @@ export const Stats = () => {
                     <Country country={player.country} />
                   </td>
                   <td className="text-center">
-                    <PlayerPosition position={player.position} />
+                    <PlayerPosition position={player.position as Position} />
                   </td>
                   <td>
                     <div className="d-flex align-items-baseline gap-2">

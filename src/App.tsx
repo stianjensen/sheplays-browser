@@ -1,10 +1,10 @@
 import players from './data/players.json';
 import league from './data/league.json';
-import {Collapse, UncontrolledTooltip} from 'reactstrap';
-import {useId, useState} from 'react';
+import {Collapse, UncontrolledTooltip, Modal, ModalHeader, ModalBody} from 'reactstrap';
+import {createContext, useContext, useId, useState} from 'react';
 import countries, {countryToFlagMapping} from './data/countries';
 import deadlines from './data/deadlines.json';
-import {FullPlayerRoundInfo} from './types';
+import {FullPlayerRoundInfo, PlayerInfo, Position} from './types';
 import {
   createHashRouter,
   createRoutesFromElements,
@@ -69,6 +69,25 @@ function unslugify(raw: string): string {
     .join(' ');
 }
 
+function orderPositions(a: PlayerInfo, b: PlayerInfo): number {
+  if (a?.position && b?.position) {
+    const positionValue = {
+      GK: 0,
+      DF: 1,
+      MF: 2,
+      FW: 3,
+    };
+    return positionValue[a.position] - positionValue[b.position];
+  }
+  if (!a?.position && b?.position) {
+    return -1;
+  }
+  if (a?.position && !b?.position) {
+    return 1;
+  }
+  return 0;
+}
+
 function calculateTeamCompleteness(roundPlayers: (FullPlayerRoundInfo | undefined)[]): {
   playersPlayed: number;
   playersAvailable: number;
@@ -106,7 +125,7 @@ export const Country = ({country}: {country: string}) => {
   );
 };
 
-export const PlayerPosition = ({position}: {position: string}) => {
+export const PlayerPosition = ({position}: {position: Position}) => {
   let color: string;
   switch (position) {
     case 'FW':
@@ -127,16 +146,16 @@ export const PlayerPosition = ({position}: {position: string}) => {
   return (
     <small>
       <div className={`badge bg-${color}-subtle text-${color}-emphasis fw-bold text-center`} style={{width: 30}}>
-        {position}
+        {position ?? '?'}
       </div>
     </small>
   );
 };
 
-const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
+const Player = ({playerInfo}: {playerInfo?: FullPlayerRoundInfo}) => {
   const id = useId();
 
-  return (
+  return playerInfo ? (
     <div className="d-flex gap-3">
       <Country country={playerInfo.country} />
       <PlayerPosition position={playerInfo.position} />
@@ -155,8 +174,14 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
             style: 'currency',
             currency: 'USD',
             minimumFractionDigits: 0,
-          }).format(playerInfo.fantasyPrice)}
+          }).format(playerInfo.fantasyPrice ?? 0)}
         </UncontrolledTooltip>
+        {playerInfo.isDesignatedCaptain && (
+          <div className="ms-2 badge rounded-pill bg-success-subtle text-success-emphasis">C</div>
+        )}
+        {playerInfo.isDesignatedViceCaptain && (
+          <div className="ms-2 badge rounded-pill bg-success-subtle text-success-emphasis">V</div>
+        )}
         {!playerInfo.played && !playerInfo.out && !playerInfo.injured && (
           <small>
             <span
@@ -191,10 +216,44 @@ const Player = ({playerInfo}: {playerInfo: FullPlayerRoundInfo}) => {
         </div>
       )}
     </div>
+  ) : (
+    <div>
+      <em>Player info missing</em>
+    </div>
   );
 };
 
-const Lineup = ({
+type PlayerOrdering = 'priority' | 'position';
+const PlayerOrderingContext = createContext<PlayerOrdering>('position');
+
+const Squad = ({
+  onFieldPlayers,
+  benchedPlayers,
+  transfers,
+}: {
+  onFieldPlayers: (FullPlayerRoundInfo | undefined)[];
+  benchedPlayers: (FullPlayerRoundInfo | undefined)[];
+  transfers: number;
+}) => (
+  <div className="d-flex flex-column gap-2 pt-3">
+    {onFieldPlayers.map((playerInfo, index) => (
+      <Player key={playerInfo?.playerId ?? index} playerInfo={playerInfo} />
+    ))}
+    <div className="d-flex flex-column bg-light gap-2 pt-1" style={{marginRight: -8, marginLeft: -8, padding: 8}}>
+      Bench
+      {benchedPlayers.map((playerInfo, index) => (
+        <Player key={playerInfo?.playerId ?? index} playerInfo={playerInfo} />
+      ))}
+    </div>
+    {transfers ? (
+      <div className="d-flex justify-content-end align-items-center gap-3">
+        <em>Transfers</em>
+        <div className="badge rounded-pill tabular-nums text-bg-danger">{transfers}</div>
+      </div>
+    ) : null}
+  </div>
+);
+const FutureLineup = ({
   slug,
   playerIds,
   transfers,
@@ -204,11 +263,29 @@ const Lineup = ({
   transfers: (typeof teams)[0]['transfers']['round-1'];
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const ordering = useContext(PlayerOrderingContext);
 
   const roundPlayers: (FullPlayerRoundInfo | undefined)[] =
-    playerIds?.map(playerId => {
-      return players.find(it => it.playerId === playerId);
+    playerIds?.map((player, index) => {
+      const playerInfo = players.find(it => it.playerId === player);
+      if (playerInfo) {
+        const out = !countries[playerInfo.club][slug]?.remaining || (playerInfo.injured ?? undefined);
+        return {
+          ...playerInfo,
+          position: playerInfo.position as Position,
+          out,
+          isDesignatedCaptain: index === 0,
+          isDesignatedViceCaptain: index === 1,
+        };
+      } else {
+        return undefined;
+      }
     }) ?? [];
+  const onFieldPlayers = roundPlayers.slice(0, 11);
+  const benchedPlayers = roundPlayers.slice(11);
+  if (ordering === 'position') {
+    onFieldPlayers.sort(orderPositions);
+  }
 
   return (
     <div className="list-group-item ps-0">
@@ -224,23 +301,7 @@ const Lineup = ({
         <span className="ms-4 far fa-clock text-secondary" />
       </div>
       <Collapse isOpen={isOpen} className="card-body">
-        <div className="d-flex flex-column gap-2 pt-3">
-          {roundPlayers.map((playerInfo, index) =>
-            playerInfo ? (
-              <Player key={playerInfo.playerId} playerInfo={playerInfo} />
-            ) : (
-              <div key={index}>
-                <em>Player info missing</em>
-              </div>
-            )
-          )}
-          {transfers ? (
-            <div className="d-flex justify-content-end align-items-center gap-3">
-              <em>Transfers</em>
-              <div className="badge rounded-pill tabular-nums text-bg-danger">{transfers}</div>
-            </div>
-          ) : null}
-        </div>
+        <Squad onFieldPlayers={onFieldPlayers} benchedPlayers={benchedPlayers} transfers={transfers} />
       </Collapse>
     </div>
   );
@@ -260,8 +321,9 @@ const TeamRound = ({
   className?: string;
 }) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen ?? false);
+  const ordering = useContext(PlayerOrderingContext);
 
-  const roundPlayers: (FullPlayerRoundInfo | undefined)[] = round.players.map(player => {
+  const roundPlayers: (FullPlayerRoundInfo | undefined)[] = round.players.map((player, index) => {
     const playerInfo = players.find(it => it.playerId === player.playerId);
     if (playerInfo) {
       const countryPlayed = countries[playerInfo.club][slug]?.players > 0;
@@ -269,13 +331,21 @@ const TeamRound = ({
       return {
         ...playerInfo,
         ...player,
+        position: playerInfo.position as Position,
         out,
+        isDesignatedCaptain: index === 0,
+        isDesignatedViceCaptain: index === 1,
       };
     } else {
       return undefined;
     }
   });
   const {playersPlayed, playersAvailable, teamIsComplete} = calculateTeamCompleteness(roundPlayers);
+  const onFieldPlayers = teamIsComplete ? roundPlayers.filter(player => player?.played) : roundPlayers.slice(0, 11);
+  const benchedPlayers = teamIsComplete ? roundPlayers.filter(player => !player?.played) : roundPlayers.slice(11);
+  if (ordering === 'position') {
+    onFieldPlayers.sort(orderPositions);
+  }
 
   return (
     <div className={`list-group-item ps-0 ${className ?? ''}`}>
@@ -306,23 +376,7 @@ const TeamRound = ({
         </div>
       </div>
       <Collapse isOpen={isOpen} className="card-body">
-        <div className="d-flex flex-column gap-2 pt-3">
-          {roundPlayers.map((playerInfo, index) =>
-            playerInfo ? (
-              <Player key={playerInfo.playerId} playerInfo={playerInfo} />
-            ) : (
-              <div key={index}>
-                <em>Player info missing</em>
-              </div>
-            )
-          )}
-          {round.transfers ? (
-            <div className="d-flex justify-content-end align-items-center gap-3">
-              <em>Transfers</em>
-              <div className="badge rounded-pill tabular-nums text-bg-danger">{round.transfers}</div>
-            </div>
-          ) : null}
-        </div>
+        <Squad onFieldPlayers={onFieldPlayers} benchedPlayers={benchedPlayers} transfers={round.transfers} />
       </Collapse>
     </div>
   );
@@ -405,7 +459,7 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
               />
             ))}
           {upcomingRound && (
-            <Lineup
+            <FutureLineup
               slug={upcomingRound}
               playerIds={team.players[upcomingRound as keyof typeof team.players]?.slice(0, 15)}
               transfers={team.transfers[upcomingRound as keyof typeof team.transfers]}
@@ -502,11 +556,20 @@ function App() {
   console.log('players', players);
   console.log('countries', countries);
   console.log('league', league);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [ordering, setOrdering] = useState<PlayerOrdering>('position');
 
   const router = createHashRouter(
     createRoutesFromElements(
       <>
-        <Route path="/" element={<League />}>
+        <Route
+          path="/"
+          element={
+            <PlayerOrderingContext.Provider value={ordering}>
+              <League />
+            </PlayerOrderingContext.Provider>
+          }
+        >
           <Route index element={<AllRounds />} />
           <Route path="/rounds/:roundSlug" element={<LeagueRound />} />
         </Route>
@@ -517,7 +580,38 @@ function App() {
 
   return (
     <div className="d-flex py-3 bg-light" style={{minHeight: '100vh'}}>
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={() => setSettingsOpen(true)}
+        style={{position: 'absolute', top: 12, right: 12}}
+      >
+        <span className="fa fa-gear" />
+      </button>
       <RouterProvider router={router} />
+      <Modal isOpen={settingsOpen} toggle={() => setSettingsOpen(false)}>
+        <ModalHeader toggle={() => setSettingsOpen(false)}>Settings</ModalHeader>
+        <ModalBody>
+          <form>
+            <div className="form-group">
+              <label htmlFor="ordering">Player ordering</label>
+              <select
+                className="form-control"
+                id="ordering"
+                value={ordering}
+                onChange={e => setOrdering(e.target.value as PlayerOrdering)}
+              >
+                <option key="priority" value="priority">
+                  By Priority
+                </option>
+                <option key="position" value="position">
+                  By Position
+                </option>
+              </select>
+            </div>
+          </form>
+        </ModalBody>
+      </Modal>
     </div>
   );
 }
