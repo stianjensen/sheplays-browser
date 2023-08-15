@@ -82,6 +82,19 @@ for (const player of players) {
   }
 }
 
+for (const country of Object.keys(countries)) {
+  for (let round = 1; round <= 7; round++) {
+    const slug = `round-${round}`;
+    if (countries[country][slug] === undefined) {
+      countries[country][slug] = {
+        players: 0,
+        points: 0,
+        remaining: countryRemaining(country, slug),
+      };
+    }
+  }
+}
+
 export default countries;
 
 export const countryToFlagMapping: {[key: string]: string} = {
