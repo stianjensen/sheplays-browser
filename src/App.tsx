@@ -253,6 +253,7 @@ const Squad = ({
     ) : null}
   </div>
 );
+
 const FutureLineup = ({
   slug,
   playerIds,
