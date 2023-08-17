@@ -16,14 +16,22 @@ import {
 } from 'react-router-dom';
 import {Stats} from './Stats';
 
-const teams = league.teams.sort((a, b) => b.score.total - a.score.total);
-const currentRoundName = Object.keys(league.teams[0].score)
+const leagueTeams = league.teams.map(team => ({
+  ...team,
+  points: Object.entries(team.score)
+    .filter(([slug]) => slug !== 'total')
+    .map(([_, points]) => points)
+    .reduce((a, b) => a + b, 0),
+}));
+
+const teams = leagueTeams.sort((a, b) => b.points - a.points);
+const currentRoundName = Object.keys(leagueTeams[0].score)
   .filter(it => it !== 'total')
   .sort()
   .reverse()[0] as 'round-1' | 'round-2';
-const previousRoundScores = league.teams
+const previousRoundScores = leagueTeams
   .slice()
-  .sort((a, b) => b.score.total - b.score[currentRoundName] - (a.score.total - a.score[currentRoundName]));
+  .sort((a, b) => b.points - b.score[currentRoundName] - (a.points - a.score[currentRoundName]));
 const rankings = Object.fromEntries(
   teams.map(team => {
     return [
@@ -39,20 +47,20 @@ const rankings = Object.fromEntries(
 let previousUserCurrentScore = -1000;
 let previousUserCurrentRank = 1;
 for (let index = 0; index < teams.length; index++) {
-  if (teams[index].score.total === previousUserCurrentScore) {
+  if (teams[index].points === previousUserCurrentScore) {
     rankings[teams[index].teamName].current = previousUserCurrentRank;
   } else {
     rankings[teams[index].teamName].current = index + 1;
     previousUserCurrentRank = index + 1;
   }
-  previousUserCurrentScore = teams[index].score.total;
+  previousUserCurrentScore = teams[index].points;
 }
 
 let previousUserPreviousRoundScore = -1000;
 let previousUserPreviousRoundRank = 1;
 for (let index = 0; index < previousRoundScores.length; index++) {
   const currentUserPreviousRoundScore =
-    previousRoundScores[index].score.total - previousRoundScores[index].score[currentRoundName];
+    previousRoundScores[index].points - previousRoundScores[index].score[currentRoundName];
   if (currentUserPreviousRoundScore === previousUserPreviousRoundScore) {
     rankings[previousRoundScores[index].teamName].previous = previousUserPreviousRoundRank;
   } else {
@@ -433,9 +441,7 @@ const Team = ({team, className}: {team: (typeof teams)[0]; className?: string}) 
           >
             {team.teamName}
           </button>
-          <div className="badge rounded-pill tabular-nums bg-primary-subtle text-primary-emphasis">
-            {team.score.total}
-          </div>
+          <div className="badge rounded-pill tabular-nums bg-primary-subtle text-primary-emphasis">{team.points}</div>
         </h5>
       </div>
       <Collapse isOpen={isOpen}>
